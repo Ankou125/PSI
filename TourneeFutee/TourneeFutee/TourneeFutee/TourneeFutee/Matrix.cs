@@ -63,10 +63,10 @@ namespace TourneeFutee
             get { return NbColumns; }
                  // pas de set
         }
-        public float Matrice
+        public List<List<float>> Matrice
         {             
-            get { return matrice; } // TODO : implémenter
-            set { Matrice = value; }// pas de set
+            get { return this.matrice; } // TODO : implémenter
+            set { this.matrice = value; }// pas de set
         }
         /* Insère une ligne à l'indice `i`. Décale les lignes suivantes vers le bas.
          * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
