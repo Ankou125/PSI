@@ -9,8 +9,13 @@
          * Toutes les cases de cette matrice sont remplies avec `defaultValue`.
          * Lève une ArgumentOutOfRangeException si une des dimensions est négative
          */
+
+        // notes : 
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
+            // if (nbRows < 0) throw new ArgumentOutOfRangeException(nameof(nbRows));
+            // if (nbColumns < 0) throw new ArgumentOutOfRangeException(nameof(nbColumns));
+
             // TODO : implémenter
         }
 
