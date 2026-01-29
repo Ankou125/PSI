@@ -1,4 +1,7 @@
-﻿namespace TourneeFutee
+﻿using System.ComponentModel;
+using System.Reflection.Metadata.Ecma335;
+
+namespace TourneeFutee
 {
     public class Matrix
     {
@@ -23,7 +26,7 @@
         // Lecture seule
         public float DefaultValue
         {
-            get; // TODO : implémenter
+            get { return defaultValue; }
                  // pas de set
         }
 
@@ -31,18 +34,22 @@
         // Lecture seule
         public int NbRows
         {
-            get; // TODO : implémenter
-                 // pas de set
+            get { return nbRows; }
+            // pas de set
         }
 
         // Propriété : nombre de colonnes
         // Lecture seule
         public int NbColumns
         {
-            get; // TODO : implémenter
+            get { return NbColumns; }
                  // pas de set
         }
-
+        public float Matrice
+        {             
+            get { return matrice; } // TODO : implémenter
+            set { Matrice = value; }// pas de set
+        }
         /* Insère une ligne à l'indice `i`. Décale les lignes suivantes vers le bas.
          * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
          * Si `i` = NbRows, insère une ligne en fin de matrice
