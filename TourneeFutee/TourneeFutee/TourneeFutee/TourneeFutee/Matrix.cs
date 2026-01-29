@@ -16,7 +16,11 @@ namespace TourneeFutee
          * Lève une ArgumentOutOfRangeException si une des dimensions est négative
          */
 
-        // notes : 
+        /* notes : 
+         * il n'y a pas de set pour les propriétés NbRows, NbColumns et DefaultValue
+         * 
+         */
+
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
             if (nbRows < 0) throw new ArgumentOutOfRangeException(nameof(nbRows));
