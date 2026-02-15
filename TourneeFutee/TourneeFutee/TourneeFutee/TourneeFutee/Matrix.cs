@@ -5,7 +5,6 @@ namespace TourneeFutee
 {
     public class Matrix
     {
-        // TODO : ajouter tous les attributs que vous jugerez pertinents 
         int nbRows;
         int nbColumns;
         float defaultValue;
@@ -44,34 +43,24 @@ namespace TourneeFutee
             }
         }
 
-        // Propriété : valeur par défaut utilisée pour remplir les nouvelles cases
-        // Lecture seule
         public float DefaultValue
         {
             get { return defaultValue; }
-                 // pas de set
         }
-
-        // Propriété : nombre de lignes
-        // Lecture seule
         public int NbRows
         {
             get { return nbRows; }
-            // pas de set
         }
-
-        // Propriété : nombre de colonnes
-        // Lecture seule
         public int NbColumns
         {
             get { return NbColumns; }
-                 // pas de set
         }
         public List<List<float>> Matrice
         {             
-            get { return this.matrice; } // TODO : implémenter
-            set { this.matrice = value; }// pas de set
+            get { return this.matrice; } 
+            set { this.matrice = value; }
         }
+
         /* Insère une ligne à l'indice `i`. Décale les lignes suivantes vers le bas.
          * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
          * Si `i` = NbRows, insère une ligne en fin de matrice
