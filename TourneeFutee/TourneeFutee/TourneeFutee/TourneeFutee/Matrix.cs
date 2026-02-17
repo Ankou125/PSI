@@ -53,7 +53,7 @@ namespace TourneeFutee
         }
         public int NbColumns
         {
-            get { return NbColumns; }
+            get { return nbColumns; }
         }
         public List<List<float>> Matrice
         {             
@@ -68,7 +68,15 @@ namespace TourneeFutee
          */
         public void AddRow(int i)
         {
-            // TODO : implémenter
+            if (i < 0 || i > nbRows)   
+                throw new ArgumentOutOfRangeException(nameof(i));
+            var newRow = new List<float>(nbColumns);
+            for (int  c = 0;  c < nbColumns ;  c++)
+            {
+                newRow.Add(defaultValue);
+            }
+            matrice.Insert(i, newRow);
+            nbRows++;
         }
 
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
@@ -78,44 +86,73 @@ namespace TourneeFutee
          */
         public void AddColumn(int j)
         {
-            // TODO : implémenter
+            if (j < 0 || j > nbColumns)   
+                throw new ArgumentOutOfRangeException(nameof(j));
+            for (int r = 0; r < nbRows; r++)
+            {
+                matrice[r].Insert(j, defaultValue);
+            }
+            nbColumns++;
         }
 
         // Supprime la ligne à l'indice `i`. Décale les lignes suivantes vers le haut.
         // Lève une ArgumentOutOfRangeException si `i` est en dehors des indices valides
         public void RemoveRow(int i)
         {
-            // TODO : implémenter
+            if (i < 0 || i >= nbRows)   
+                throw new ArgumentOutOfRangeException(nameof(i));
+            matrice.RemoveAt(i);
+            nbRows--;
         }
 
         // Supprime la colonne à l'indice `j`. Décale les colonnes suivantes vers la gauche.
         // Lève une ArgumentOutOfRangeException si `j` est en dehors des indices valides
         public void RemoveColumn(int j)
         {
-            // TODO : implémenter
+            if (j < 0 || j >= nbColumns)   
+                throw new ArgumentOutOfRangeException(nameof(j));
+            for (int r = 0; r < nbRows; r++)
+            {
+                matrice[r].RemoveAt(j);
+            }
+            nbColumns--;
         }
 
         // Renvoie la valeur à la ligne `i` et colonne `j`
         // Lève une ArgumentOutOfRangeException si `i` ou `j` est en dehors des indices valides
         public float GetValue(int i, int j)
         {
-            // TODO : implémenter
-            return 0.0f;
+            if (i < 0 || i >= nbRows)   
+                throw new ArgumentOutOfRangeException(nameof(i));
+            if (j < 0 || j >= nbColumns)
+                throw new ArgumentOutOfRangeException(nameof(j));
+            return matrice[i][j];
+            // return 0.0f;
         }
 
         // Affecte la valeur à la ligne `i` et colonne `j` à `v`
         // Lève une ArgumentOutOfRangeException si `i` ou `j` est en dehors des indices valides
         public void SetValue(int i, int j, float v)
         {
-            // TODO : implémenter
+            if (i < 0 || i >= nbRows)   
+                throw new ArgumentOutOfRangeException(nameof(i));
+            if (j < 0 || j >= nbColumns)
+                throw new ArgumentOutOfRangeException(nameof(j));
+            matrice[i][j] = v;
         }
 
         // Affiche la matrice
         public void Print()
         {
-            // TODO : implémenter
-        }
-
+            for (int i = 0; i < nbRows; i++)
+            {
+                for (int j = 0; j < nbColumns; j++)
+                {
+                    Console.Write(matrice[i][j] + " ");
+                }
+                Console.WriteLine();
+            }
+        } // à verif 
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
 
