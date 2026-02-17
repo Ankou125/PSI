@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TourneeFutee
 {
-    internal class Sommet
+    public class Sommet
     {
         private string nom;
         private int valeur;
