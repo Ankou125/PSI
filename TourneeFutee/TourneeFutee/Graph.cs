@@ -5,7 +5,10 @@
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
-
+        int order;
+        bool directed;
+        Matrix matrice;
+        Dictionary<Sommet, int> sommets;
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)
@@ -19,19 +22,25 @@
         // --- Propriétés ---
 
         // Propriété : ordre du graphe
-        // Lecture seule
         public int Order
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.order; }
         }
-
         // Propriété : graphe orienté ou non
-        // Lecture seule
         public bool Directed
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.directed; }
+        }
+        //Dictionnaire de sommets
+        public Dictionary<Sommet, int> Sommets
+        {
+            get { return this.sommets; }
+            set { this.sommets = value; }
+        }
+        public Matrix Matrice
+        {
+            get { return this.matrice; }
+            set { this.matrice = value; }
         }
 
 
