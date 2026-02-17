@@ -4,7 +4,10 @@
     {
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-
+        Matrix matrice_adj;
+        Dictionary<Sommet,int> sommets;
+        int order;
+        bool directed;
 
         // --- Construction du graphe ---
 
@@ -19,21 +22,25 @@
         // --- Propriétés ---
 
         // Propriété : ordre du graphe
-        // Lecture seule
         public int Order
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.order; }   
         }
-
         // Propriété : graphe orienté ou non
-        // Lecture seule
         public bool Directed
         {
-            get;    // TODO : implémenter
-                    // pas de set
+            get { return this.directed; }    
         }
-
+        //Dictionnaire de graphs
+        public Dictionary<Sommet,int> Sommets
+        {
+            get{return this.sommets;}
+        }
+        //Matrice d'adjacence 
+        public Matrix Matrice_adj
+        {
+            get { return this.matrice_adj;}
+        }
 
         // --- Gestion des sommets ---
 
