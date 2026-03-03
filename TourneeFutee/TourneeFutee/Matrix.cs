@@ -17,17 +17,30 @@ namespace TourneeFutee
 
         /* notes :
          * il n'y a pas de set pour les propriétés NbRows, NbColumns et DefaultValue
-         *
+         * la matrice est implémentée par une liste de listes de float
+         * 
          */
 
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
-            if (nbRows < 0) throw new ArgumentOutOfRangeException(nameof(nbRows));
-            if (nbColumns < 0) throw new ArgumentOutOfRangeException(nameof(nbColumns));
+            if (nbRows < 0) throw new ArgumentOutOfRangeException(nameof(nbRows)); 
+            if (nbColumns < 0) throw new ArgumentOutOfRangeException(nameof(nbColumns)); 
             this.nbColumns = nbColumns;
             this.nbRows = nbRows;
             this.defaultValue = defaultValue;
             this.matrice = new List<List<float>>();
+            for (int i = 0; i < nbRows; i++)
+            {
+                List<float> ligne = new List<float>();
+                for (int j = 0; j < nbColumns; j++)
+                {
+                    ligne.Add(defaultValue);
+                }
+                matrice.Add(ligne);
+            }
+            // modif : on doit faire une boucle pour chaque ligne et chaque colonne pour remplir la matrice avec la valeur par défaut, sinon on aurait des références à la même liste de float pour chaque ligne, ce qui n'est pas souhaitable.
+
+            /*
             int i = 0;
             int j = 0;
             List<float> ligne = new List<float>();
@@ -40,8 +53,9 @@ namespace TourneeFutee
             {
                 matrice.Add(ligne);
                 j++;
-            }
+            }*/
         }
+
 
         public float DefaultValue
         {
@@ -52,6 +66,7 @@ namespace TourneeFutee
         {
             get { return nbRows; }
         }
+
         public int NbColumns
         {
             get { return nbColumns; }
@@ -68,12 +83,11 @@ namespace TourneeFutee
          * Si `i` = NbRows, insère une ligne en fin de matrice
          * Lève une ArgumentOutOfRangeException si `i` est en dehors des indices valides
          */
-
         public void AddRow(int i)
         {
             if (i < 0 || i > nbRows)   
                 throw new ArgumentOutOfRangeException(nameof(i));
-            var newRow = new List<float>(nbColumns);
+            var newRow = new List<float>(nbColumns); 
             for (int  c = 0;  c < nbColumns ;  c++)
             {
                 newRow.Add(defaultValue);
@@ -87,8 +101,8 @@ namespace TourneeFutee
          * Si `j` = NbColums, insère une colonne en fin de matrice
          * Lève une ArgumentOutOfRangeException si `j` est en dehors des indices valides
          */
-
         public void AddColumn(int j)
+
         {
             if (j < 0 || j > nbColumns)   
                 throw new ArgumentOutOfRangeException(nameof(j));
@@ -98,9 +112,9 @@ namespace TourneeFutee
             }
             nbColumns++;
         }
+
         // Supprime la ligne à l'indice `i`. Décale les lignes suivantes vers le haut.
         // Lève une ArgumentOutOfRangeException si `i` est en dehors des indices valides
-
         public void RemoveRow(int i)
         {
             if (i < 0 || i >= nbRows)   
@@ -111,7 +125,6 @@ namespace TourneeFutee
 
         // Supprime la colonne à l'indice `j`. Décale les colonnes suivantes vers la gauche.
         // Lève une ArgumentOutOfRangeException si `j` est en dehors des indices valides
-
         public void RemoveColumn(int j)
         {
             if (j < 0 || j >= nbColumns)   
@@ -125,7 +138,6 @@ namespace TourneeFutee
 
         // Renvoie la valeur à la ligne `i` et colonne `j`
         // Lève une ArgumentOutOfRangeException si `i` ou `j` est en dehors des indices valides
-
         public float GetValue(int i, int j)
         {
             if (i < 0 || i >= nbRows)   
@@ -138,7 +150,6 @@ namespace TourneeFutee
 
         // Affecte la valeur à la ligne `i` et colonne `j` à `v`
         // Lève une ArgumentOutOfRangeException si `i` ou `j` est en dehors des indices valides
-
         public void SetValue(int i, int j, float v)
         {
             if (i < 0 || i >= nbRows)   
@@ -149,7 +160,6 @@ namespace TourneeFutee
         }
 
         // Affiche la matrice
-
         public void Print()
         {
             for (int i = 0; i < nbRows; i++)
