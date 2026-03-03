@@ -1,9 +1,7 @@
 ﻿namespace TourneeFutee
 {
     public class Graph
-    {
-
-        // TODO : ajouter tous les attributs que vous jugerez pertinents 
+    { 
 
         int order;
         bool directed;
@@ -15,9 +13,9 @@
         // La valeur `noEdgeValue` est le poids modélisant l'absence d'un arc (0 par défaut)
         public Graph(bool directed, float noEdgeValue = 0)
         {
-            // TODO : implémenter
+            this.directed = directed;
+
         }
-        // test
 
         // --- Propriétés ---
 
