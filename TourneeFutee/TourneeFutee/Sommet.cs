@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace TourneeFutee
 {
-    public class Sommet
+    internal class Sommet
     {
+        private static int compteur = 0;
         private string nom;
         private int valeur;
         private int indice;
@@ -16,7 +17,8 @@ namespace TourneeFutee
         {
             this.nom = nom;
             this.valeur = valeur;
-            this.indice = indice;
+            this.indice = compteur;
+            compteur++;
         }
 
         public string Nom
