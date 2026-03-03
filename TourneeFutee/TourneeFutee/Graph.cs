@@ -6,7 +6,8 @@
         int order;
         bool directed;
         Matrix matrice;
-        Dictionary<Sommet, int> sommets; //int correspond à un index dans la structure graph permattant de retrouver facilement les arcs associés à un sommet
+        Dictionary<Sommet, int> sommets; //int correspond à la ligne/colonne de la matrice d'adjacence
+        List<string> nomSommets;
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)
@@ -42,6 +43,11 @@
             get { return this.matrice; }
             set { this.matrice = value; }
         }
+        public List<string> NomSommets
+        {
+            get { return this.nomSommets; }
+            set { this.nomSommets = value; }
+        }
 
 
         // --- Gestion des sommets ---
@@ -50,7 +56,10 @@
         // Lève une ArgumentException s'il existe déjà un sommet avec le même nom dans le graphe
         public void AddVertex(string name, float value = 0)
         {
-            // TODO : implémenter
+            if (NomSommets.Contains(name)) throw new ArgumentOutOfRangeException(nameof(name));
+            Sommet s = new Sommet(name, value);
+            sommets.Add(s,sommets.Count);
+            NomSommets.Add(name);
         }
 
 
