@@ -28,7 +28,17 @@ namespace TourneeFutee
             this.nbRows = nbRows;
             this.defaultValue = defaultValue;
             this.matrice = new List<List<float>>();
-            int i = 0;
+            for (int i = 0; i < nbRows; i++)
+            {
+                List<float> ligne = new List<float>();
+                for (int j = 0; j < nbColumns; j++)
+                {
+                    ligne.Add(defaultValue);
+                }
+                matrice.Add(ligne);
+            } // grace a cette modif, tout marche correctement, sinon, on avait une matrice de nbRows lignes mais toutes les lignes pointaient vers la même liste de nbColumns éléments, ce qui faisait que toute modification d'une ligne modifiait toutes les lignes
+            
+            /*int i = 0;
             int j = 0;
             List<float> ligne = new List<float>();
             while (i < nbColumns)
@@ -40,7 +50,7 @@ namespace TourneeFutee
             {
                 matrice.Add(ligne);
                 j++;
-            }
+            }*/
         }
 
         public float DefaultValue
