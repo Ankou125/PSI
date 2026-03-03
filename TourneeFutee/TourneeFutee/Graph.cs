@@ -1,23 +1,23 @@
 ﻿namespace TourneeFutee
 {
     public class Graph
-    { 
+    {
+
+        // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
         int order;
         bool directed;
         Matrix matrice;
-        Dictionary<Sommet, int> sommets; //int correspond à un index dans la structure graph permattant de retrouver facilement les arcs associés à un sommet
+        Dictionary<Sommet, int> sommets;
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)
         // La valeur `noEdgeValue` est le poids modélisant l'absence d'un arc (0 par défaut)
         public Graph(bool directed, float noEdgeValue = 0)
         {
-            this.directed = directed;
-            this.matrice= new Matrix();
-            this.sommets= new Dictionary<Sommet, int>();
-            this.order = 0;
+            // TODO : implémenter
         }
+
 
         // --- Propriétés ---
 
