@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace TourneeFutee
 {
-    internal class Sommet
+    public class Sommet
     {
         private static int compteur = 0;
         private string nom;
         private int valeur;
         private int indice;
 
-        public Sommet(string nom, int valeur, int indice)
+        public Sommet(string nom, int valeur)
         {
             this.nom = nom;
             this.valeur = valeur;
