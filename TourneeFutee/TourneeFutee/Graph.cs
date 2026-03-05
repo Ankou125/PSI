@@ -8,7 +8,6 @@
         int order;
         bool directed;
         Matrix matrice;
-        Dictionary<Sommet, int> sommets; //int correspond à la ligne/colonne de la matrice d'adjacence
         Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice
         List<Sommet> sommets; //Indice d'un sommet dans la liste correspond à l'indice dans la matrice
         // --- Construction du graphe ---
