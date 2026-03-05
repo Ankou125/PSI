@@ -10,10 +10,10 @@ namespace TourneeFutee
     {
         private static int compteur = 0;
         private string nom;
-        private int valeur;
+        private float valeur;
         private int indice;
 
-        public Sommet(string nom, int valeur)
+        public Sommet(string nom, float valeur)
         {
             this.nom = nom;
             this.valeur = valeur;
@@ -25,9 +25,10 @@ namespace TourneeFutee
         {
             get { return nom; }
         }
-        public int Valeur
+        public float Valeur
         {
             get { return valeur; }
+            set { valeur = value; }
         }
         public int Indice
         {

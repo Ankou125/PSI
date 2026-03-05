@@ -9,14 +9,19 @@
         bool directed;
         Matrix matrice;
         Dictionary<Sommet, int> sommets; //int correspond à la ligne/colonne de la matrice d'adjacence
-        List<string> nomSommets;
+        Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice
+        List<Sommet> sommets; //Indice d'un sommet dans la liste correspond à l'indice dans la matrice
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)
         // La valeur `noEdgeValue` est le poids modélisant l'absence d'un arc (0 par défaut)
         public Graph(bool directed, float noEdgeValue = 0)
         {
-            // TODO : implémenter
+            this.order = 0;
+            this.directed = directed;
+            this.matrice= new Matrix(0,0,noEdgeValue);
+            nomSommets = new Dictionary<string, int>();
+            sommets = new List<Sommet>();
         }
 
 
@@ -32,21 +37,21 @@
         {
             get { return this.directed; }
         }
-        //Dictionnaire de sommets
-        public Dictionary<Sommet, int> Sommets
+        //Dictionnaire des noms
+        public Dictionary<string, int> NomSommets
         {
-            get { return this.sommets; }
-            set { this.sommets = value; }
+            get { return this.nomSommets; }
+            set { this.nomSommets = value; }
         }
         public Matrix Matrice
         {
             get { return this.matrice; }
             set { this.matrice = value; }
         }
-        public List<string> NomSommets
+        public List<Sommet> Sommets
         {
-            get { return this.nomSommets; }
-            set { this.nomSommets = value; }
+            get { return this.sommets; }
+            set { this.sommets = value; }
         }
 
 
@@ -56,10 +61,14 @@
         // Lève une ArgumentException s'il existe déjà un sommet avec le même nom dans le graphe
         public void AddVertex(string name, float value = 0)
         {
-            if (NomSommets.Contains(name)) throw new ArgumentOutOfRangeException(nameof(name));
+            if (nomSommets.ContainsKey(name)) throw new ArgumentException("Nom déjà utilisé");
             Sommet s = new Sommet(name, value);
-            sommets.Add(s,sommets.Count);
-            NomSommets.Add(name);
+            int c = sommets.Count;
+            sommets.Add(s);
+            nomSommets.Add(name, c);
+            matrice.AddRow(c);
+            matrice.AddColumn(c);
+            order++; 
         }
 
 
@@ -67,22 +76,38 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void RemoveVertex(string name)
         {
-            // TODO : implémenter
+            if (!nomSommets.ContainsKey(name)) throw new ArgumentException("Sommet innexistant");
+            int i = nomSommets[name];
+            matrice.RemoveColumn(i);
+            matrice.RemoveRow(i);
+            sommets.RemoveAt(i);
+            nomSommets.Remove(name);
+            foreach (var key in nomSommets.Keys)    // On modifie les indices associés au nom des sommets
+            {
+                if (nomSommets[key] > i)
+                {
+                    nomSommets[key]--;
+                }
+            }
+            order--;
         }
 
         // Renvoie la valeur du sommet de nom `name`
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public float GetVertexValue(string name)
         {
-            // TODO : implémenter
-            return 0.0f;
+            if (!nomSommets.ContainsKey(name)) throw new ArgumentException("Sommet innexistant");
+            int i = nomSommets[name];
+            return sommets[i].Valeur;
         }
 
         // Affecte la valeur du sommet de nom `name` à `value`
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void SetVertexValue(string name, float value)
         {
-            // TODO : implémenter
+            if (!nomSommets.ContainsKey(name)) throw new ArgumentException("Sommet innexistant");
+            int i = nomSommets[name];
+            sommets[i].Valeur=value;
         }
 
 
