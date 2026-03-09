@@ -1,14 +1,11 @@
-﻿using System.ComponentModel;
-using System.Reflection.Metadata.Ecma335;
-
-namespace TourneeFutee
+﻿namespace TourneeFutee
 {
     public class Matrix
     {
-        int nbRows;
-        int nbColumns;
-        float defaultValue;
-        List<List<float>> matrice;
+        private int nbRows;
+        private int nbColumns;
+        private float defaultValue;
+        private List<List<float>> matrice;
 
         /* Crée une matrice de dimensions `nbRows` x `nbColums`.
          * Toutes les cases de cette matrice sont remplies avec `defaultValue`.
@@ -23,8 +20,8 @@ namespace TourneeFutee
 
         public Matrix(int nbRows = 0, int nbColumns = 0, float defaultValue = 0)
         {
-            if (nbRows < 0) throw new ArgumentOutOfRangeException(nameof(nbRows)); 
-            if (nbColumns < 0) throw new ArgumentOutOfRangeException(nameof(nbColumns)); 
+            if (nbRows < 0) throw new ArgumentOutOfRangeException(nameof(nbRows));
+            if (nbColumns < 0) throw new ArgumentOutOfRangeException(nameof(nbColumns));
             this.nbColumns = nbColumns;
             this.nbRows = nbRows;
             this.defaultValue = defaultValue;
@@ -38,24 +35,8 @@ namespace TourneeFutee
                 }
                 matrice.Add(ligne);
             }
-            // modif : on doit faire une boucle pour chaque ligne et chaque colonne pour remplir la matrice avec la valeur par défaut, sinon on aurait des références à la même liste de float pour chaque ligne, ce qui n'est pas souhaitable.
-
-            /*
-            int i = 0;
-            int j = 0;
-            List<float> ligne = new List<float>();
-            while (i < nbColumns)
-            {
-                ligne.Add(defaultValue);
-                i++;
-            }
-            while (j < nbRows)
-            {
-                matrice.Add(ligne);
-                j++;
-            }*/
+            // On crée une nouvelle liste pour chaque ligne pour éviter que toutes les lignes pointent vers la même référence.
         }
-
 
         public float DefaultValue
         {
@@ -87,7 +68,7 @@ namespace TourneeFutee
         {
             if (i < 0 || i > nbRows)   
                 throw new ArgumentOutOfRangeException(nameof(i));
-            var newRow = new List<float>(nbColumns); 
+            List<float> newRow = new List<float>(nbColumns); 
             for (int  c = 0;  c < nbColumns ;  c++)
             {
                 newRow.Add(defaultValue);
@@ -97,7 +78,7 @@ namespace TourneeFutee
         }
 
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
-         * Toutes les cases de la nouvelle ligne contiennent DefaultValue.
+         * Toutes les cases de la nouvelle colonne  contiennent DefaultValue.
          * Si `j` = NbColums, insère une colonne en fin de matrice
          * Lève une ArgumentOutOfRangeException si `j` est en dehors des indices valides
          */
@@ -106,9 +87,9 @@ namespace TourneeFutee
         {
             if (j < 0 || j > nbColumns)   
                 throw new ArgumentOutOfRangeException(nameof(j));
-            for (int r = 0; r < nbRows; r++)
+            for (int i = 0; i < nbRows; i++)
             {
-                matrice[r].Insert(j, defaultValue);
+                matrice[i].Insert(j, defaultValue);
             }
             nbColumns++;
         }
@@ -129,9 +110,9 @@ namespace TourneeFutee
         {
             if (j < 0 || j >= nbColumns)   
                 throw new ArgumentOutOfRangeException(nameof(j));
-            for (int r = 0; r < nbRows; r++)
+            for (int i = 0; i < nbRows; i++)
             {
-                matrice[r].RemoveAt(j);
+                matrice[i].RemoveAt(j);
             }
             nbColumns--;
         }
@@ -160,6 +141,7 @@ namespace TourneeFutee
         }
 
         // Affiche la matrice
+        // On parcourt chaque ligne puis chaque colonne et on affiche les valeurs.
         public void Print()
         {
             for (int i = 0; i < nbRows; i++)
@@ -170,8 +152,6 @@ namespace TourneeFutee
                 }
                 Console.WriteLine();
             }
-        } // à verif 
-
-        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes
+        }
     }
 }
