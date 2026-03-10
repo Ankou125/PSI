@@ -116,12 +116,9 @@
         public List<string> GetNeighbors(string vertexName)
         {
             List<string> neighborNames = new List<string>();
-
             if (!nomSommets.ContainsKey(vertexName))
-                throw new ArgumentException("ce sommet n'existe pas");
-
+                throw new ArgumentException("Ce sommet n'existe pas");
             int i = nomSommets[vertexName];
-
             for (int j = 0; j < order; j++)
             {
                 if (matrice.GetValue(i, j) != matrice.DefaultValue)
@@ -129,7 +126,6 @@
                     neighborNames.Add(sommets[j].Nom);
                 }
             }
-
             return neighborNames;
         }
 
@@ -144,17 +140,13 @@
         public void AddEdge(string sourceName, string destinationName, float weight = 1)
         {
             if (!nomSommets.ContainsKey(sourceName) || !nomSommets.ContainsKey(destinationName))
-                throw new ArgumentException("le sommet n'exitse pas");
-
+                throw new ArgumentException("Le sommet n'exitse pas");
             int i = nomSommets[sourceName];
             int j = nomSommets[destinationName];
-
             if (matrice.GetValue(i, j) != matrice.DefaultValue)
-                throw new ArgumentException("arc déjà existant");
-
+                throw new ArgumentException("Arc déjà existant");
             matrice.SetValue(i, j, weight);
-
-            if (!directed)
+            if (this.directed==false)
             {
                 matrice.SetValue(j, i, weight);
             }
@@ -169,21 +161,16 @@
         public void RemoveEdge(string sourceName, string destinationName)
         {
             if (!nomSommets.ContainsKey(sourceName) || !nomSommets.ContainsKey(destinationName))
-                throw new ArgumentException("le sommet est inexistant");
-
+                throw new ArgumentException("Le sommet est inexistant");
             int i = nomSommets[sourceName];
             int j = nomSommets[destinationName];
-
             if (matrice.GetValue(i, j) == matrice.DefaultValue)
-                throw new ArgumentException("l'arc est inexistant");
-
+                throw new ArgumentException("L'arc est inexistant");
             matrice.SetValue(i, j, matrice.DefaultValue);
-
-            if (!directed)
+            if (this.directed == false)
             {
                 matrice.SetValue(j, i, matrice.DefaultValue);
             }
-
         }
 
         /* Renvoie le poids de l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName`
@@ -195,14 +182,11 @@
         public float GetEdgeWeight(string sourceName, string destinationName)
         {
             if (!nomSommets.ContainsKey(sourceName) || !nomSommets.ContainsKey(destinationName))
-                throw new ArgumentException("le sommet est inexistant");
-
+                throw new ArgumentException("Le sommet est inexistant");
             int i = nomSommets[sourceName];
             int j = nomSommets[destinationName];
-
             if (matrice.GetValue(i, j) == matrice.DefaultValue)
-                throw new ArgumentException("l'arc est inexistant");
-
+                throw new ArgumentException("L'arc est inexistant");
             return matrice.GetValue(i, j);
         }
 
@@ -213,14 +197,11 @@
         public void SetEdgeWeight(string sourceName, string destinationName, float weight)
         {
             if (!nomSommets.ContainsKey(sourceName) || !nomSommets.ContainsKey(destinationName))
-                throw new ArgumentException("le sommet est inexistant");
-
+                throw new ArgumentException("Le sommet est inexistant");
             int i = nomSommets[sourceName];
             int j = nomSommets[destinationName];
-
             matrice.SetValue(i, j, weight);
-
-            if (!directed)
+            if (this.directed == false)
             {
                 matrice.SetValue(j, i, weight);
             }
