@@ -75,20 +75,20 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public void RemoveVertex(string name)
         {
-            if (!nomSommets.ContainsKey(name)) throw new ArgumentException("Sommet innexistant");
-            int i = nomSommets[name];
-            matrice.RemoveColumn(i);
+            if (!nomSommets.ContainsKey(name)) throw new ArgumentException("Sommet innexistant"); // on verifie si le sommet existe dans le dictionnaire
+            int i = nomSommets[name];  // on récupère l'indice du sommet dans le graphe
+            matrice.RemoveColumn(i);// on enleve la colonne i dans la matrice 
             matrice.RemoveRow(i);
             sommets.RemoveAt(i);
             nomSommets.Remove(name);
             foreach (var key in nomSommets.Keys)    // On modifie les indices associés au nom des sommets
             {
-                if (nomSommets[key] > i)
+                if (nomSommets[key] > i) // si un sommet avait un indice plus grand que celui qu'on a supprimé alors il va se décaler d'une place vers la gauche dans la liste
                 {
-                    nomSommets[key]--;
+                    nomSommets[key]--;  // on enlève 1 à son indice pour remettre les bons numero
                 }
             }
-            order--;
+            order--;  // on diminue de 1 le nombre tota de sommets dans le graphe
         }
 
         // Renvoie la valeur du sommet de nom `name`
@@ -106,7 +106,7 @@
         {
             if (!nomSommets.ContainsKey(name)) throw new ArgumentException("Sommet innexistant");
             int i = nomSommets[name];
-            sommets[i].Valeur=value;
+            sommets[i].Valeur=value; //change la valeur d'un sommmet 
         }
 
 
@@ -115,18 +115,18 @@
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
         public List<string> GetNeighbors(string vertexName)
         {
-            List<string> neighborNames = new List<string>();
+            List<string> neigborNames = new List<string>();// on cree une liste vide qui va contenir les nom des sommets voisins
             if (!nomSommets.ContainsKey(vertexName))
                 throw new ArgumentException("Ce sommet n'existe pas");
-            int i = nomSommets[vertexName];
+            int i = nomSommets[vertexName]; // on recupere l indice du sommet dans la matrice (correspond a la ligne de la matrice)
             for (int j = 0; j < order; j++)
             {
-                if (matrice.GetValue(i, j) != matrice.DefaultValue)
+                if (matrice.GetValue(i, j) != matrice.DefaultValue)// si la valeur dans la matrice n est pas la valeur par defaut il existe un arc entre le sommet i et le sommet j
                 {
-                    neighborNames.Add(sommets[j].Nom);
+                    neigborNames.Add(sommets[j].Nom); // on ajoute le nom du sommet j dans la liste des voisins
                 }
             }
-            return neighborNames;
+            return neigborNames;// on revoit la liste des voisnis trouvés
         }
 
         // --- Gestion des arcs ---
@@ -141,14 +141,14 @@
         {
             if (!nomSommets.ContainsKey(sourceName) || !nomSommets.ContainsKey(destinationName))
                 throw new ArgumentException("Le sommet n'exitse pas");
-            int i = nomSommets[sourceName];
-            int j = nomSommets[destinationName];
+            int i = nomSommets[sourceName]; //départ
+            int j = nomSommets[destinationName]; //arrivée
             if (matrice.GetValue(i, j) != matrice.DefaultValue)
                 throw new ArgumentException("Arc déjà existant");
-            matrice.SetValue(i, j, weight);
-            if (this.directed==false)
+            matrice.SetValue(i, j, weight);//on met la valeur du poids dans la matrice
+            if (this.directed==false)//arc pas oriente
             {
-                matrice.SetValue(j, i, weight);
+                matrice.SetValue(j, i, weight);//on fait donc dans les deux sens
             }
         }
 
@@ -164,12 +164,12 @@
                 throw new ArgumentException("Le sommet est inexistant");
             int i = nomSommets[sourceName];
             int j = nomSommets[destinationName];
-            if (matrice.GetValue(i, j) == matrice.DefaultValue)
+            if (matrice.GetValue(i, j) == matrice.DefaultValue) // on verifie si l arc existe. si la valeur est celle par défaut il n y a pas d arc
                 throw new ArgumentException("L'arc est inexistant");
-            matrice.SetValue(i, j, matrice.DefaultValue);
+            matrice.SetValue(i, j, matrice.DefaultValue); // on remet la valeur par défaut dans la matrice donc suppr l arc entre i et j
             if (this.directed == false)
             {
-                matrice.SetValue(j, i, matrice.DefaultValue);
+                matrice.SetValue(j, i, matrice.DefaultValue); //suppr l arc da,s les deux sens si pas orienté 
             }
         }
 
@@ -187,7 +187,7 @@
             int j = nomSommets[destinationName];
             if (matrice.GetValue(i, j) == matrice.DefaultValue)
                 throw new ArgumentException("L'arc est inexistant");
-            return matrice.GetValue(i, j);
+            return matrice.GetValue(i, j); // on renvoie la valeur stockée dans la matrice = poids
         }
 
         /* Affecte le poids l'arc allant du sommet nommé `sourceName` au sommet nommé `destinationName` à `weight` 
@@ -203,7 +203,7 @@
             matrice.SetValue(i, j, weight);
             if (this.directed == false)
             {
-                matrice.SetValue(j, i, weight);
+                matrice.SetValue(j, i, weight); //on change le poids dans les deux sens si pas orienté
             }
         }
 

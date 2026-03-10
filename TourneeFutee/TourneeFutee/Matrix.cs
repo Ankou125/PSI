@@ -28,12 +28,12 @@
             this.matrice = new List<List<float>>();
             for (int i = 0; i < nbRows; i++)
             {
-                List<float> ligne = new List<float>();
+                List<float> ligne = new List<float>(); // on cree une nouvelle liste pour representer une ligne
                 for (int j = 0; j < nbColumns; j++)
                 {
-                    ligne.Add(defaultValue);
+                    ligne.Add(defaultValue);// on ajoute la valeur dans la case
                 }
-                matrice.Add(ligne);
+                matrice.Add(ligne);// on ajoute la ligne complete dans la matrice
             }
             // On crée une nouvelle liste pour chaque ligne pour éviter que toutes les lignes pointent vers la même référence.
         }
@@ -71,10 +71,11 @@
             List<float> newRow = new List<float>(nbColumns); 
             for (int  c = 0;  c < nbColumns ;  c++)
             {
-                newRow.Add(defaultValue);
+                newRow.Add(defaultValue); // on ajoute la valeur dans chaque case de la nouvelle ligne
+
             }
-            matrice.Insert(i, newRow);
-            nbRows++;
+            matrice.Insert(i, newRow);// on insere la nouvelle ligne dans la matrice a la position i et les lignes après i vont se decaler
+            nbRows++;// ducoup on augmente de 1 le nombre total de lignes dans la matrice
         }
 
         /* Insère une colonne à l'indice `j`. Décale les colonnes suivantes vers la droite.
@@ -137,7 +138,7 @@
                 throw new ArgumentOutOfRangeException(nameof(i));
             if (j < 0 || j >= nbColumns)
                 throw new ArgumentOutOfRangeException(nameof(j));
-            matrice[i][j] = v;
+            matrice[i][j] = v;// on change la valeur de la case situé a la ligne i et la colonne j par v
         }
 
         // Affiche la matrice
