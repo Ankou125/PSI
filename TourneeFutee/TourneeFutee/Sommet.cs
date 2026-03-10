@@ -35,6 +35,5 @@ namespace TourneeFutee
             get { return indice; }
             set { indice = value; }
         }
-
     }
 }

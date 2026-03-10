@@ -23,7 +23,6 @@
             sommets = new List<Sommet>();
         }
 
-
         // --- Propriétés ---
 
         // Propriété : ordre du graphe
@@ -53,7 +52,6 @@
             set { this.sommets = value; }
         }
 
-
         // --- Gestion des sommets ---
 
         // Ajoute le sommet de nom `name` et de valeur `value` (0 par défaut) dans le graphe
@@ -69,7 +67,6 @@
             matrice.AddColumn(c);
             order++; 
         }
-
 
         // Supprime le sommet de nom `name` du graphe (et tous les arcs associés)
         // Lève une ArgumentException si le sommet n'a pas été trouvé dans le graphe
@@ -206,10 +203,5 @@
                 matrice.SetValue(j, i, weight); //on change le poids dans les deux sens si pas orienté
             }
         }
-
-        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
-
     }
-
-
 }
