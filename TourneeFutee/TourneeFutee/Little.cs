@@ -7,6 +7,7 @@
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
         private Matrix matrice;
         private Graph graph;
+        int nbSommets;
 
         public Matrix Matrice
         {
@@ -18,10 +19,16 @@
             get { return graph; }
             set { graph = value; }
         }
+        public int NbSommets
+        {
+            get { return nbSommets;}
+        }
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
         {
-            // TODO : implémenter
+            this.matrice = graph.Matrice;
+            this.graph = graph;
+            this.nbSommets = graph.Sommets.Count;
         }
 
         // Trouve la tournée optimale dans le graphe `this.graph`
@@ -59,18 +66,32 @@
         {
 
             int i = 0;
-            while(i< includedSegments.Count)
+            string current = segment.destination;
+            int length = 1;
+            while (true)
             {
-                if ((segment.source == includedSegments[i].destination) && (segment.destination == includedSegments[i].source))
+                bool found = false;
+                while(i<includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
                 {
-                    return true;
-                }
-                if ((includedSegments.Count < nbCities) && (segment.destination == includedSegments[i].source))
+                    if (includedSegments[i].source == current)
+                    {
+                        current = includedSegments[i].destination;
+                        length++;
+                        found = true;
+                        break;
+                    }
+                    i++;
+                }             
+                if (found==false)
+                    return false;
+                if (current == segment.source) // cycle autorisé seulement si complet
                 {
-                    return true;
+                    if (length < nbCities)
+                        return true;
+                    else
+                        return false;
                 }
             }
-            return false;   
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
