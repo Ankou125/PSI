@@ -58,7 +58,18 @@
         public static bool IsForbiddenSegment((string source, string destination) segment, List<(string source, string destination)> includedSegments, int nbCities)
         {
 
-            // TODO : implémenter
+            int i = 0;
+            while(i< includedSegments.Count)
+            {
+                if ((segment.source == includedSegments[i].destination) && (segment.destination == includedSegments[i].source))
+                {
+                    return true;
+                }
+                if ((includedSegments.Count < nbCities) && (segment.destination == includedSegments[i].source))
+                {
+                    return true;
+                }
+            }
             return false;   
         }
 
