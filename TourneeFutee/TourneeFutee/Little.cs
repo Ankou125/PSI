@@ -5,7 +5,13 @@
     public class Little
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
+        Matrix matrice;
 
+        public Matrix Matrice
+        {
+            get {  return matrice; }
+            set { matrice = value; }
+        }
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
         {
