@@ -33,6 +33,7 @@
             this.graph = graph;
             this.nbSommets = graph.Sommets.Count;
         }
+
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
         public Tour ComputeOptimalTour()
@@ -42,7 +43,6 @@
         }
 
         // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
-
 
         // Réduit la matrice `m` et revoie la valeur totale de la réduction
         // Après appel à cette méthode, la matrice `m` est *modifiée*.
@@ -143,8 +143,6 @@
                 }
             }
         }
-
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
-
     }
 }
