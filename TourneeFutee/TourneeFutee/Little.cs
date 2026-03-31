@@ -30,9 +30,6 @@
             get { return graph; }
             set { graph = value; }
         }
-<<<<<<< HEAD
-
-=======
         public int NbSommets
         {
             get { return nbSommets;}
@@ -44,7 +41,6 @@
             this.graph = graph;
             this.nbSommets = graph.Sommets.Count;
         }
->>>>>>> 3e0a99134898aa911a58232cf2f7729866354d56
 
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
