@@ -8,9 +8,20 @@
         private Matrix matrice;
         private Graph graph;
 
+        // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
+        public Little(Graph graph)
+        {
+            if (graph == null) 
+                throw new ArgumentNullException(nameof(graph));
+            this.graph = graph;
+            this.matrice = new Matrix(graph.NbVertices, graph.NbVertices, float.PositiveInfinity);
+            this.matrice = graph.matrice.Clone() as Matrix;
+
+            // TODO : implémenter
+        }
         public Matrix Matrice
         {
-            get {  return matrice; }
+            get { return matrice; }
             set { matrice = value; }
         }
         public Graph Graph
@@ -18,11 +29,7 @@
             get { return graph; }
             set { graph = value; }
         }
-        // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
-        public Little(Graph graph)
-        {
-            // TODO : implémenter
-        }
+
 
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
