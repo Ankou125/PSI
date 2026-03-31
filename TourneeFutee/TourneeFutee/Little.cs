@@ -7,6 +7,7 @@
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
         private Matrix matrice;
         private Graph graph;
+        int nbSommets;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
@@ -29,7 +30,21 @@
             get { return graph; }
             set { graph = value; }
         }
+<<<<<<< HEAD
 
+=======
+        public int NbSommets
+        {
+            get { return nbSommets;}
+        }
+        // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
+        public Little(Graph graph)
+        {
+            this.matrice = graph.Matrice;
+            this.graph = graph;
+            this.nbSommets = graph.Sommets.Count;
+        }
+>>>>>>> 3e0a99134898aa911a58232cf2f7729866354d56
 
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
@@ -65,8 +80,33 @@
         public static bool IsForbiddenSegment((string source, string destination) segment, List<(string source, string destination)> includedSegments, int nbCities)
         {
 
-            // TODO : implémenter
-            return false;   
+            int i = 0;
+            string current = segment.destination;
+            int length = 1;
+            while (true)
+            {
+                bool found = false;
+                while(i<includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
+                {
+                    if (includedSegments[i].source == current)
+                    {
+                        current = includedSegments[i].destination;
+                        length++;
+                        found = true;
+                        break;
+                    }
+                    i++;
+                }             
+                if (found==false)
+                    return false;
+                if (current == segment.source) // cycle autorisé seulement si complet
+                {
+                    if (length < nbCities)
+                        return true;
+                    else
+                        return false;
+                }
+            }
         }
 
         // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
