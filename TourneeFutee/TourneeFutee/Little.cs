@@ -5,21 +5,11 @@
     public class Little
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-        private Matrix matrice;
-        private Graph graph;
+        Matrix matrice;
+        Graph graph;
         int nbSommets;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
-        public Little(Graph graph)
-        {
-            if (graph == null) 
-                throw new ArgumentNullException(nameof(graph));
-            this.graph = graph;
-            this.matrice = new Matrix(graph.NbVertices, graph.NbVertices, float.PositiveInfinity);
-            this.matrice = graph.matrice.Clone() as Matrix;
-
-            // TODO : implémenter
-        }
         public Matrix Matrice
         {
             get { return matrice; }
@@ -32,16 +22,17 @@
         }
         public int NbSommets
         {
-            get { return nbSommets;}
+            get { return nbSommets; }
         }
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Little(Graph graph)
         {
-            this.matrice = graph.Matrice;
+            if (graph == null)
+                throw new ArgumentNullException(nameof(graph));
+            this.matrice = graph.Matrice.Clone();
             this.graph = graph;
             this.nbSommets = graph.Sommets.Count;
         }
-
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
         public Tour ComputeOptimalTour()
@@ -57,8 +48,56 @@
         // Après appel à cette méthode, la matrice `m` est *modifiée*.
         public static float ReduceMatrix(Matrix m)
         {
-            // TODO : implémenter
-            return 0.0f;
+            float reduction = 0.0f; // création d'une variable pour stocker la valeur totale de la réduction
+            for (int i = 0; i < m.NbRows; i++)
+            {
+                float minRow = float.PositiveInfinity; // initialisation du minimum de la ligne à l'infini positif
+                for (int j = 0; j < m.NbColumns; j++)
+                {
+                    float value = m.GetValue(i, j);
+                    if (value < minRow)
+                    {
+                        minRow = value;
+                    }
+                } // recherche du minimum de la ligne en parcourant tous les éléments de la ligne
+                if (minRow > 0 && minRow != float.PositiveInfinity) // condition pour effectuer réduction
+                {
+                    for (int j = 0; j < m.NbColumns; j++)
+                    {
+                        float value = m.GetValue(i, j);
+                        if (value != float.PositiveInfinity)
+                        {
+                            m.SetValue(i, j, value - minRow);
+                        }
+                    } // réduction de la ligne en soustrayant le minimum de chaque élément de la ligne
+                    reduction += minRow;
+                }
+            }
+            for (int j = 0; j < m.NbColumns; j++) // même processus pour les colonnes
+            {
+                float minCol = float.PositiveInfinity;
+                for (int i = 0; i < m.NbRows; i++)
+                {
+                    float value = m.GetValue(i, j);
+                    if (value < minCol)
+                    {
+                        minCol = value;
+                    }
+                }
+                if (minCol > 0 && minCol != float.PositiveInfinity)
+                {
+                    for (int i = 0; i < m.NbRows; i++)
+                    {
+                        float value = m.GetValue(i, j);
+                        if (value != float.PositiveInfinity)
+                        {
+                            m.SetValue(i, j, value - minCol);
+                        }
+                    }
+                    reduction += minCol;
+                }
+            }
+            return reduction;
         }
 
         // Renvoie le regret de valeur maximale dans la matrice de coûts `m` sous la forme d'un tuple `(int i, int j, float value)`
@@ -82,7 +121,7 @@
             while (true)
             {
                 bool found = false;
-                while(i<includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
+                while (i < includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
                 {
                     if (includedSegments[i].source == current)
                     {
@@ -92,8 +131,8 @@
                         break;
                     }
                     i++;
-                }             
-                if (found==false)
+                }
+                if (found == false)
                     return false;
                 if (current == segment.source) // cycle autorisé seulement si complet
                 {

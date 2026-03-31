@@ -154,5 +154,19 @@
                 Console.WriteLine();
             }
         }
+
+        // Renvoie une copie de la matrice courante - pour little
+        public Matrix Clone()
+        {
+            Matrix clone = new Matrix(this.NbRows, this.NbColumns, this.DefaultValue);
+            for (int i = 0; i < this.NbRows; i++)
+            {
+                for (int j = 0; j < this.NbColumns; j++)
+                {
+                    clone.SetValue(i, j, this.GetValue(i, j));
+                }
+            }
+            return clone;
+        }
     }
 }
