@@ -129,8 +129,6 @@
                                 }
                             }
                         }
-
-                        
                         for (int k = 0; k < m.NbRows; k++) //on fait la meme chose pour la ligne
                         {
                             if (k != i)
@@ -142,16 +140,15 @@
                                 }
                             }
                         }//contient la plus petite valeur de la colonne j sauf celle de la case i,j
-
-                        
                         if (minRow == float.PositiveInfinity)
+                        {
                             minRow = 0; //si on a pas trouvé un plus petit minimum que l'infini alors on met à 0
-
+                        }
                         if (minCol == float.PositiveInfinity)
+                        {
                             minCol = 0;
-
+                        }
                         float regret = minRow + minCol; //calcul du regret
-
                         if (regret > maxRegret) //si le regret qu on vient de calculer est plus grand que le précédent alors on remplace
                         {
                             maxRegret = regret;
@@ -161,13 +158,10 @@
                     }
                 }
             }
-
-            
             if (maxRegret == -1.0f)//si aucun regret a été trouvé on met à -1
             {
                 return (0, 0, 0.0f);
             }
-
             return (bestI, bestJ, maxRegret);//on renvoit la ligne, la colonne du regret maximal et sa valeur 
         }
 
