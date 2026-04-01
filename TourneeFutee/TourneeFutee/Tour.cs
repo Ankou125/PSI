@@ -4,6 +4,9 @@
     public class Tour
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
+        float cost;
+        int nbSegments;
+        List<(string source, string destination)> parcour;
 
         // propriétés
 
@@ -17,6 +20,11 @@
         public int NbSegments
         {
             get;    // TODO : implémenter
+        }
+        public List<(string source, string destination)> Parcour
+        {
+            get { return parcour; }
+            set { this.parcour = value; }
         }
 
 
