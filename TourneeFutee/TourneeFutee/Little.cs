@@ -38,6 +38,9 @@
         // (c'est à dire le cycle hamiltonien de plus faible coût)
         public Tour ComputeOptimalTour()
         {
+            Matrix m = this.Matrice.Clone(); // on clone la matrice pour ne pas modifier celle du graphe
+
+
             // TODO : implémenter
             return new Tour();
         }
