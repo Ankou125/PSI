@@ -181,8 +181,11 @@
             int i = 0;
             string current = segment.destination;
             int length = 1;
+            if (includedSegments.Count(s => s.source == segment.source) > 0)
+                return true;
             while (true)
             {
+                i = 0;
                 bool found = false;
                 while (i < includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
                 {
