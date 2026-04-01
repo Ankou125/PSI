@@ -8,6 +8,19 @@
         int nbSegments;
         List<(string source, string destination)> parcour;
 
+        public Tour (float cost, int nbSegments)
+        {
+            this.cost = cost;
+            this.nbSegments = nbSegments;
+            this.parcour=new List<(string source, string destination)> ();
+        }
+        public Tour ()
+        {
+            this.cost = 0;
+            this.nbSegments = 0;
+            this.parcour = new List<(string source, string destination)>();
+        }
+
         // propriétés
 
         // Coût total de la tournée
