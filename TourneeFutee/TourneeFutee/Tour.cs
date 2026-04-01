@@ -26,13 +26,15 @@
         // Coût total de la tournée
         public float Cost
         {
-            get;    // TODO : implémenter
+            get { return cost; } 
+            // pas de set
         }
 
         // Nombre de trajets dans la tournée
         public int NbSegments
         {
-            get;    // TODO : implémenter
+            get { return parcour.Count;  }
+            // pas de set
         }
         public List<(string source, string destination)> Parcour
         {
