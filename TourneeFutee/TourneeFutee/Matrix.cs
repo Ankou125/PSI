@@ -162,8 +162,15 @@
             for (int i = 0; i < this.NbRows; i++)
             {
                 for (int j = 0; j < this.NbColumns; j++)
-                {
-                    clone.SetValue(i, j, this.GetValue(i, j));
+                { 
+                    if (i == j)
+                    {
+                        clone.SetValue(i, j, float.PositiveInfinity);
+                    }
+                    else
+                    {
+                        clone.SetValue(i, j, this.GetValue(i, j));
+                    }
                 }
             }
             return clone;

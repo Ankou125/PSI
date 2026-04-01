@@ -38,9 +38,13 @@
         // (c'est à dire le cycle hamiltonien de plus faible coût)
         public Tour ComputeOptimalTour()
         {
-            Matrix m = this.Matrice.Clone(); // on clone la matrice pour ne pas modifier celle du graphe
-
-
+            Matrix m_debut = this.Matrice.Clone(); // on clone la matrice pour ne pas modifier celle du graphe
+            float borne_inf = ReduceMatrix(m_debut); // on effectue la réduction de la matrice et on stocke la valeur de la réduction
+            List<(string source, string destination)> includedSegments = new List<(string source, string destination)>(); // on initialise la liste des segments inclus dans la tournée
+            List<(string source, string destination)> excludedSegments = new List<(string source, string destination)>(); // on initialise la liste des segments exclus de la tournée
+            List<string> nom_ligne = new List<string>(); // on initialise la liste des noms de lignes pour pouvoir faire le lien entre les indices de la matrice et les sommets du graphe
+            List<string> nom_colonne = new List<string>(); // même chose pour les colonnes
+            
             // TODO : implémenter
             return new Tour();
         }
