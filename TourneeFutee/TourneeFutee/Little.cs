@@ -104,10 +104,73 @@
         // où `i`, `j`, et `value` contiennent respectivement la ligne, la colonne et la valeur du regret maximale
         public static (int i, int j, float value) GetMaxRegret(Matrix m)
         {
-            // TODO : implémenter
-            return (0, 0, 0.0f);
+            float maxRegret = -1.0f; //stock le plus grand regret
+            int bestI = 0;
+            int bestJ = 0;
 
+            for (int i = 0; i < m.NbRows; i++) //parcours la matrice
+            {
+                for (int j = 0; j < m.NbColumns; j++)
+                {
+                    if (m.GetValue(i, j) == 0) //si on trouve un 0 dans la matrice
+                    {
+                        float minRow = float.PositiveInfinity; //on met à infini comme ca n'importe quelle valeurs sera plus petite
+                        float minCol = float.PositiveInfinity;
+
+                        
+                        for (int k = 0; k < m.NbColumns; k++) //on cherche le minimum sur la colonne
+                        {
+                            if (k != j) //pour ignorer la case nulle
+                            {
+                                float val = m.GetValue(i, k); //une autre case de la matrice
+                                if (val < minRow) //si la valeur est plus petite que notre minimum actuel on la garde
+                                {
+                                    minRow = val; //elle devient le nouveau minimum 
+                                }
+                            }
+                        }
+
+                        
+                        for (int k = 0; k < m.NbRows; k++) //on fait la meme chose pour la ligne
+                        {
+                            if (k != i)
+                            {
+                                float val = m.GetValue(k, j);
+                                if (val < minCol)
+                                {
+                                    minCol = val;
+                                }
+                            }
+                        }//contient la plus petite valeur de la colonne j sauf celle de la case i,j
+
+                        
+                        if (minRow == float.PositiveInfinity)
+                            minRow = 0; //si on a pas trouvé un plus petit minimum que l'infini alors on met à 0
+
+                        if (minCol == float.PositiveInfinity)
+                            minCol = 0;
+
+                        float regret = minRow + minCol; //calcul du regret
+
+                        if (regret > maxRegret) //si le regret qu on vient de calculer est plus grand que le précédent alors on remplace
+                        {
+                            maxRegret = regret;
+                            bestI = i;
+                            bestJ = j;
+                        }
+                    }
+                }
+            }
+
+            
+            if (maxRegret == -1.0f)//si aucun regret a été trouvé on met à -1
+            {
+                return (0, 0, 0.0f);
+            }
+
+            return (bestI, bestJ, maxRegret);//on renvoit la ligne, la colonne du regret maximal et sa valeur 
         }
+
 
         /* Renvoie vrai si le segment `segment` est un trajet parasite, c'est-à-dire s'il ferme prématurément la tournée incluant les trajets contenus dans `includedSegments`
          * Une tournée est incomplète si elle visite un nombre de villes inférieur à `nbCities`
