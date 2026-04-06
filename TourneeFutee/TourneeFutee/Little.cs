@@ -36,18 +36,45 @@
 
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
+       
         public Tour ComputeOptimalTour()
         {
-            Matrix m_debut = this.Matrice.Clone(); // on clone la matrice pour ne pas modifier celle du graphe
-            float borne_inf = ReduceMatrix(m_debut); // on effectue la réduction de la matrice et on stocke la valeur de la réduction
-            List<(string source, string destination)> includedSegments = new List<(string source, string destination)>(); // on initialise la liste des segments inclus dans la tournée
-            List<string> nom_ligne = new List<string>(); // on initialise la liste des noms de lignes pour pouvoir faire le lien entre les indices de la matrice et les sommets du graphe
-            List<string> nom_colonne = new List<string>(); // même chose pour les colonnes
-            
-            // TODO : implémenter
-            return new Tour();
-        }
+            Matrix m = this.matrice.Clone();
+            float coutTotal = ReduceMatrix(m);
+            List<(string source, string destination)> inclus = new List<(string, string)>();
 
+            while (inclus.Count < nbSommets)
+            {
+                var (i, j, _) = GetMaxRegret(m);
+                string src = graph.Sommets[i];
+                string dst = graph.Sommets[j];
+
+                if (!IsForbiddenSegment((src, dst), inclus, nbSommets))
+                {
+                    inclus.Add((src, dst));
+                    for (int k = 0; k < nbSommets; k++)
+                    {
+                        m.SetValue(i, k, float.PositiveInfinity);
+                        m.SetValue(k, j, float.PositiveInfinity);
+                    }
+                    m.SetValue(j, i, float.PositiveInfinity);
+                    coutTotal += ReduceMatrix(m);
+                }
+                else
+                {
+                    m.SetValue(i, j, float.PositiveInfinity);
+                    coutTotal += ReduceMatrix(m);
+                }
+            }
+
+            Tour t = new Tour();
+            t.Parcour = inclus;
+            return t;
+            if (inclus.Count < nbSommets)
+            {
+                return new Tour();
+            }
+        }
         // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
 
         // Réduit la matrice `m` et revoie la valeur totale de la réduction
@@ -181,11 +208,8 @@
             int i = 0;
             string current = segment.destination;
             int length = 1;
-            if (includedSegments.Count(s => s.source == segment.source) > 0)
-                return true;
             while (true)
             {
-                i = 0;
                 bool found = false;
                 while (i < includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
                 {
