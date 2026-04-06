@@ -26,14 +26,14 @@
         // Coût total de la tournée
         public float Cost
         {
-            get { return cost; } 
+            get { return cost;}
             // pas de set
         }
 
         // Nombre de trajets dans la tournée
         public int NbSegments
         {
-            get { return parcour.Count;  }
+            get { return parcour.Count;}
             // pas de set
         }
         public List<(string source, string destination)> Parcour
