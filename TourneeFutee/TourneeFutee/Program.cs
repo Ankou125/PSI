@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-
+            /*
             // Création d'une matrice 3x3 avec 0 comme valeur par défaut
             Matrix m = new Matrix(3, 3, 0);
 
@@ -41,10 +41,7 @@
 
             // Tester GetValue
             Console.WriteLine("\nValeur en (1,1) : " + m.GetValue(1, 1));
-
-            Console.WriteLine("\nFin du test.");
-
-
+            */
         }
     }
 }

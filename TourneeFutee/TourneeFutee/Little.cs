@@ -37,44 +37,103 @@
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
        
+        
         public Tour ComputeOptimalTour()
         {
             Matrix m = this.matrice.Clone();
+            for (int k = 0; k < m.NbRows; k++)
+            {
+                m.SetValue(k, k, float.PositiveInfinity);
+            }
             float coutTotal = ReduceMatrix(m);
             List<(string source, string destination)> inclus = new List<(string, string)>();
-
-            while (inclus.Count < nbSommets)
+            List<string> nomLigne = new List<string>();
+            List<string> nomCol = new List<string>();
+            foreach (var sommet in this.graph.Sommets)
             {
-                var (i, j, _) = GetMaxRegret(m);
-                string src = graph.Sommets[i].Nom;
-                string dst = graph.Sommets[j].Nom;
-
-                if (!IsForbiddenSegment((src, dst), inclus, nbSommets))
-                {
-                    inclus.Add((src, dst));
-                    for (int k = 0; k < nbSommets; k++)
-                    {
-                        m.SetValue(i, k, float.PositiveInfinity);
-                        m.SetValue(k, j, float.PositiveInfinity);
-                    }
-                    m.SetValue(j, i, float.PositiveInfinity);
-                    coutTotal += ReduceMatrix(m);
-                }
-                else
-                {
-                    m.SetValue(i, j, float.PositiveInfinity);
-                    coutTotal += ReduceMatrix(m);
-                }
+                nomLigne.Add(sommet.Nom);
+                nomCol.Add(sommet.Nom);
             }
-
-            Tour t = new Tour();
-            t.Parcour = inclus;
-            return t;
-            if (inclus.Count < nbSommets)
-            {
+            float bestCost = float.PositiveInfinity;
+            List<(string source, string destination)> bestSegments = new List<(string source, string destination)>();
+            Search(m, inclus, nomLigne, nomCol, coutTotal, ref bestCost, ref bestSegments);
+            if (bestSegments.Count == 0)
                 return new Tour();
+            float realCost = ComputeTourCost(bestSegments);
+            return new Tour(bestSegments, realCost);
+        }
+
+        private void Search(Matrix m, List<(string source, string destination)> inclus, List<string> nomLigne, List<string> nomCol, float coutTotal, ref float bestCost, ref List<(string source, string destination)> bestSegments)
+        {
+            if (coutTotal >= bestCost) // Coupure
+                return;
+            if (inclus.Count == this.nbSommets)
+            {
+                float realCost = ComputeTourCost(inclus);
+                if (realCost < bestCost)
+                {
+                    bestCost = realCost;
+                    bestSegments = new List<(string source, string destination)>(inclus);
+                }
+                return;
+            }
+            if (m.NbRows == 0 || m.NbColumns == 0) // sécurité pour éviter les erreurs d'indexation
+                return;
+            var regret = GetMaxRegret(m);
+            int i = regret.i;
+            int j = regret.j;
+            if (i < 0 || j < 0 || i >= nomLigne.Count || j >= nomCol.Count)
+                return;
+            string source = nomLigne[i];
+            string destination = nomCol[j];
+            Matrix excludedMatrix = m.Clone(); // branche exclueant le segment (source, destination)
+            excludedMatrix.SetValue(i, j, float.PositiveInfinity);
+            float excludedReduction = ReduceMatrix(excludedMatrix);
+            float excludedBound = coutTotal + excludedReduction;
+            Search(excludedMatrix, new List<(string source, string destination)>(inclus), new List<string>(nomLigne), new List<string>(nomCol), excludedBound, ref bestCost, ref bestSegments);
+            var segment = (source, destination);
+            if (!IsForbiddenSegment(segment, inclus, this.nbSommets))
+            {
+                Matrix includedMatrix = m.Clone();
+                List<(string source, string destination)> newIncludedSegments = new List<(string source, string destination)>(inclus);
+                List<string> newRowNames = new List<string>(nomLigne);
+                List<string> newColNames = new List<string>(nomCol);
+                newIncludedSegments.Add(segment);
+                includedMatrix.RemoveRow(i); // Supprimer ligne source et colonne destination
+                includedMatrix.RemoveColumn(j);
+                newRowNames.RemoveAt(i);
+                newColNames.RemoveAt(j);
+                for (int r = 0; r < includedMatrix.NbRows; r++) // Interdire les segments parasites dans la matrice restante
+                {
+                    for (int c = 0; c < includedMatrix.NbColumns; c++)
+                    {
+                        var candidate = (newRowNames[r], newColNames[c]);
+                        if (IsForbiddenSegment(candidate, newIncludedSegments, this.nbSommets))
+                        {
+                            includedMatrix.SetValue(r, c, float.PositiveInfinity);
+                        }
+                    }
+                }
+                float includedReduction = 0.0f;
+                if (includedMatrix.NbRows > 0 && includedMatrix.NbColumns > 0)
+                {
+                    includedReduction = ReduceMatrix(includedMatrix);
+                }
+                float includedBound = coutTotal + includedReduction;
+                Search(includedMatrix, newIncludedSegments, newRowNames, newColNames, includedBound, ref bestCost, ref bestSegments);
             }
         }
+        private float ComputeTourCost(List<(string source, string destination)> segments)
+        {
+            float total = 0.0f;
+            foreach (var segment in segments)
+            {
+                total += this.graph.GetEdgeWeight(segment.source, segment.destination);
+            }
+            return total;
+        }
+
+
         // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
 
         // Réduit la matrice `m` et revoie la valeur totale de la réduction
@@ -236,6 +295,5 @@
                 }
             }
         }
-        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
     }
 }

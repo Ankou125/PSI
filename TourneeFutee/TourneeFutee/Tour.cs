@@ -5,33 +5,38 @@
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
         float cost;
-        int nbSegments;
+         // int nbSegments;
         List<(string source, string destination)> parcour;
 
-        public Tour (float cost, int nbSegments)
-        {
-            this.cost = cost;
-            this.nbSegments = nbSegments;
-            this.parcour=new List<(string source, string destination)> ();
-        }
         public Tour ()
         {
             this.cost = 0;
-            this.nbSegments = 0;
+            // this.nbSegments = 0;
             this.parcour = new List<(string source, string destination)>();
+        }
+        /*
+        public Tour(float cost, int nbSegments)
+        {
+            this.cost = cost;
+            this.nbSegments = nbSegments;
+            this.parcour = new List<(string source, string destination)>();
+        } 
+        */
+        public Tour(List<(string source, string destination)> parcour, float cost)
+        {
+            Console.WriteLine("CTOR Tour(List,float) appelé, cost = " + cost);
+            this.cost = cost;
+            this.parcour = new List<(string source, string destination)>(parcour);
+            // this.nbSegments = this.parcour.Count;
         }
 
         // propriétés
-
-        // Coût total de la tournée
-        public float Cost
+        public float Cost // Coût total de la tournée
         {
             get { return cost;}
             // pas de set
         }
-
-        // Nombre de trajets dans la tournée
-        public int NbSegments
+        public int NbSegments // Nombre de trajets dans la tournée
         {
             get { return parcour.Count;}
             // pas de set
@@ -42,7 +47,6 @@
             set { this.parcour = value; }
         }
 
-
         // Renvoie vrai si la tournée contient le trajet `source`->`destination`
         public bool ContainsSegment((string source, string destination) segment)
         {
@@ -51,17 +55,16 @@
             foreach (var s in this.parcour)
             {
                 Console.WriteLine(s.source + " --> " + s.destination);
-                if((s.source==segment.source)&(s.destination==segment.destination))
+                if((s.source==segment.source)&&(s.destination==segment.destination))
                     return true;
             }
             return false;   
         }
 
-
         // Affiche les informations sur la tournée : coût total et trajets
         public void Print()
         {
-            if ((this == null) | (this.parcour.Count == 0))
+            if ((this == null) || (this.parcour.Count == 0))
                 Console.WriteLine("Tournée inexistante ou vide");
             Console.WriteLine("Coût total : " + this.cost);
             Console.WriteLine("Trajets : ");
@@ -70,8 +73,5 @@
                 Console.WriteLine(segment.source+" --> "+segment.destination);
             }
         }
-
-        // TODO : ajouter toutes les méthodes que vous jugerez pertinentes 
-
     }
 }
