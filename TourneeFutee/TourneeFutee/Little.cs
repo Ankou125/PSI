@@ -46,8 +46,8 @@
             while (inclus.Count < nbSommets)
             {
                 var (i, j, _) = GetMaxRegret(m);
-                string src = graph.Sommets[i];
-                string dst = graph.Sommets[j];
+                string src = graph.Sommets[i].Nom;
+                string dst = graph.Sommets[j].Nom;
 
                 if (!IsForbiddenSegment((src, dst), inclus, nbSommets))
                 {
@@ -208,8 +208,11 @@
             int i = 0;
             string current = segment.destination;
             int length = 1;
+            if (includedSegments.Count(s => s.source == segment.source) > 0)
+                return true;
             while (true)
             {
+                i = 0;
                 bool found = false;
                 while (i < includedSegments.Count) //Recherche si il n'est pas déjà possible de faire ce chemin (cherche un cycle)
                 {
