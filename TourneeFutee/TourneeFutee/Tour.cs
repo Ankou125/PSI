@@ -5,29 +5,27 @@
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
         float cost;
-         // int nbSegments;
+        int nbSegments;
         List<(string source, string destination)> parcour;
 
         public Tour ()
         {
             this.cost = 0;
-            // this.nbSegments = 0;
+            this.nbSegments = 0;
             this.parcour = new List<(string source, string destination)>();
         }
-        /*
+        
         public Tour(float cost, int nbSegments)
         {
             this.cost = cost;
             this.nbSegments = nbSegments;
             this.parcour = new List<(string source, string destination)>();
-        } 
-        */
+        }
         public Tour(List<(string source, string destination)> parcour, float cost)
         {
-            Console.WriteLine("CTOR Tour(List,float) appelé, cost = " + cost);
             this.cost = cost;
+            this.nbSegments = parcour.Count;
             this.parcour = new List<(string source, string destination)>(parcour);
-            // this.nbSegments = this.parcour.Count;
         }
 
         // propriétés

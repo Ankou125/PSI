@@ -36,91 +36,135 @@
 
         // Trouve la tournée optimale dans le graphe `this.graph`
         // (c'est à dire le cycle hamiltonien de plus faible coût)
-       
-        
         public Tour ComputeOptimalTour()
         {
             Matrix m = this.matrice.Clone();
-            for (int k = 0; k < m.NbRows; k++)
+            for (int i = 0; i < m.NbRows; i++)
             {
-                m.SetValue(k, k, float.PositiveInfinity);
+                m.SetValue(i, i, float.PositiveInfinity);
             }
-            float coutTotal = ReduceMatrix(m);
-            List<(string source, string destination)> inclus = new List<(string, string)>();
-            List<string> nomLigne = new List<string>();
-            List<string> nomCol = new List<string>();
+            float borneInitiale = ReduceMatrix(m);
+            List<(string source, string destination)> segmentsChoisis = new List<(string source, string destination)>();
+            List<string> villesSources = new List<string>();
+            List<string> villesDestinations = new List<string>();
             foreach (var sommet in this.graph.Sommets)
             {
-                nomLigne.Add(sommet.Nom);
-                nomCol.Add(sommet.Nom);
+                villesSources.Add(sommet.Nom);
+                villesDestinations.Add(sommet.Nom);
             }
-            float bestCost = float.PositiveInfinity;
-            List<(string source, string destination)> bestSegments = new List<(string source, string destination)>();
-            Search(m, inclus, nomLigne, nomCol, coutTotal, ref bestCost, ref bestSegments);
-            if (bestSegments.Count == 0)
-                return new Tour();
-            float realCost = ComputeTourCost(bestSegments);
-            return new Tour(bestSegments, realCost);
-        }
+            float meilleurCout = float.PositiveInfinity;
+            List<(string source, string destination)> meilleursSegments = new List<(string source, string destination)>();
 
-        private void Search(Matrix m, List<(string source, string destination)> inclus, List<string> nomLigne, List<string> nomCol, float coutTotal, ref float bestCost, ref List<(string source, string destination)> bestSegments)
+            Search(m, segmentsChoisis, villesSources, villesDestinations, borneInitiale, ref meilleurCout, ref meilleursSegments);
+            if (meilleursSegments.Count == 0)
+                return new Tour();
+
+            return new Tour(meilleursSegments, meilleurCout);
+        }
+        private void Search(Matrix m, List<(string source, string destination)> segmentsChoisis, List<string> villesSources, List<string> villesDestinations, float borneCourante, ref float meilleurCout, ref List<(string source, string destination)> meilleursSegments)
         {
-            if (coutTotal >= bestCost) // Coupure
+            if (borneCourante >= meilleurCout)
                 return;
-            if (inclus.Count == this.nbSommets)
+
+            if (m.NbRows == 2 && m.NbColumns == 2) // Cas terminal : matrice 2x2 => on termine directement
             {
-                float realCost = ComputeTourCost(inclus);
-                if (realCost < bestCost)
+                List<(string source, string destination)> tourneeFinale = new List<(string source, string destination)>(segmentsChoisis);
+                for (int i = 0; i < 2; i++)
                 {
-                    bestCost = realCost;
-                    bestSegments = new List<(string source, string destination)>(inclus);
+                    bool found = false;
+                    for (int j = 0; j < 2; j++)
+                    {
+                        float valeur = m.GetValue(i, j);
+                        var candidat = (villesSources[i], villesDestinations[j]);
+                        if (valeur != float.PositiveInfinity && !IsForbiddenSegment(candidat, tourneeFinale, this.nbSommets))
+                        {
+                            tourneeFinale.Add(candidat);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        return;
+                }
+                if (tourneeFinale.Count == this.nbSommets)
+                {
+                    float coutReel = ComputeTourCost(tourneeFinale);
+                    if (coutReel < meilleurCout)
+                    {
+                        meilleurCout = coutReel;
+                        meilleursSegments = new List<(string source, string destination)>(tourneeFinale);
+                    }
                 }
                 return;
             }
-            if (m.NbRows == 0 || m.NbColumns == 0) // sécurité pour éviter les erreurs d'indexation
+            if (m.NbRows == 0 || m.NbColumns == 0)
                 return;
             var regret = GetMaxRegret(m);
-            int i = regret.i;
-            int j = regret.j;
-            if (i < 0 || j < 0 || i >= nomLigne.Count || j >= nomCol.Count)
+            int iRegret = regret.i;
+            int jRegret = regret.j;
+            if (iRegret < 0 || jRegret < 0)
                 return;
-            string source = nomLigne[i];
-            string destination = nomCol[j];
-            Matrix excludedMatrix = m.Clone(); // branche exclueant le segment (source, destination)
-            excludedMatrix.SetValue(i, j, float.PositiveInfinity);
-            float excludedReduction = ReduceMatrix(excludedMatrix);
-            float excludedBound = coutTotal + excludedReduction;
-            Search(excludedMatrix, new List<(string source, string destination)>(inclus), new List<string>(nomLigne), new List<string>(nomCol), excludedBound, ref bestCost, ref bestSegments);
+            string source = villesSources[iRegret];
+            string destination = villesDestinations[jRegret];
             var segment = (source, destination);
-            if (!IsForbiddenSegment(segment, inclus, this.nbSommets))
+
+            if (!IsForbiddenSegment(segment, segmentsChoisis, this.nbSommets)) // 1. Branche incluse d'abord
             {
-                Matrix includedMatrix = m.Clone();
-                List<(string source, string destination)> newIncludedSegments = new List<(string source, string destination)>(inclus);
-                List<string> newRowNames = new List<string>(nomLigne);
-                List<string> newColNames = new List<string>(nomCol);
-                newIncludedSegments.Add(segment);
-                includedMatrix.RemoveRow(i); // Supprimer ligne source et colonne destination
-                includedMatrix.RemoveColumn(j);
-                newRowNames.RemoveAt(i);
-                newColNames.RemoveAt(j);
-                for (int r = 0; r < includedMatrix.NbRows; r++) // Interdire les segments parasites dans la matrice restante
+                Matrix mIncluse = m.Clone();
+                List<(string source, string destination)> nouveauxSegmentsChoisis = new List<(string source, string destination)>(segmentsChoisis);
+                List<string> villesSourcesRestantes = new List<string>(villesSources);
+                List<string> villesDestinationsRestantes = new List<string>(villesDestinations);
+                nouveauxSegmentsChoisis.Add(segment);
+                mIncluse.RemoveRow(iRegret);
+                mIncluse.RemoveColumn(jRegret);
+                villesSourcesRestantes.RemoveAt(iRegret);
+                villesDestinationsRestantes.RemoveAt(jRegret);
+                for (int r = 0; r < mIncluse.NbRows; r++)
                 {
-                    for (int c = 0; c < includedMatrix.NbColumns; c++)
+                    for (int c = 0; c < mIncluse.NbColumns; c++)
                     {
-                        var candidate = (newRowNames[r], newColNames[c]);
-                        if (IsForbiddenSegment(candidate, newIncludedSegments, this.nbSommets))
+                        var candidat = (villesSourcesRestantes[r], villesDestinationsRestantes[c]);
+                        if (IsForbiddenSegment(candidat, nouveauxSegmentsChoisis, this.nbSommets))
                         {
-                            includedMatrix.SetValue(r, c, float.PositiveInfinity);
+                            mIncluse.SetValue(r, c, float.PositiveInfinity);
                         }
                     }
                 }
-                float includedReduction = 0.0f;
-                if (includedMatrix.NbRows > 0 && includedMatrix.NbColumns > 0)
+                float reductionInclus = 0.0f;
+                if (mIncluse.NbRows > 0 && mIncluse.NbColumns > 0)
                 {
-                    includedReduction = ReduceMatrix(includedMatrix);
+                    reductionInclus = ReduceMatrix(mIncluse);
                 }
-                float includedBound = coutTotal + includedReduction;
-                Search(includedMatrix, newIncludedSegments, newRowNames, newColNames, includedBound, ref bestCost, ref bestSegments);
+                float borneInclus = borneCourante + reductionInclus;
+                if (borneInclus < meilleurCout)
+                {
+                    Search(
+                        mIncluse,
+                        nouveauxSegmentsChoisis,
+                        villesSourcesRestantes,
+                        villesDestinationsRestantes,
+                        borneInclus,
+                        ref meilleurCout,
+                        ref meilleursSegments
+                    );
+                }
+            }
+
+            Matrix mExclue = m.Clone();  // 2. Branche exclue ensuite
+            mExclue.SetValue(iRegret, jRegret, float.PositiveInfinity);
+            float reductionExclus = ReduceMatrix(mExclue);
+            float borneExclus = borneCourante + reductionExclus;
+            if (borneExclus < meilleurCout)
+            {
+                Search(
+                    mExclue,
+                    new List<(string source, string destination)>(segmentsChoisis),
+                    new List<string>(villesSources),
+                    new List<string>(villesDestinations),
+                    borneExclus,
+                    ref meilleurCout,
+                    ref meilleursSegments
+                );
             }
         }
         private float ComputeTourCost(List<(string source, string destination)> segments)
@@ -132,7 +176,6 @@
             }
             return total;
         }
-
 
         // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
 
@@ -252,7 +295,7 @@
             }
             if (maxRegret == -1.0f)//si aucun regret a été trouvé on met à -1
             {
-                return (0, 0, 0.0f);
+                return (-1, -1, 0.0f);
             }
             return (bestI, bestJ, maxRegret);//on renvoit la ligne, la colonne du regret maximal et sa valeur 
         }
