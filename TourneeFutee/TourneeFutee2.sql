@@ -30,7 +30,7 @@ CREATE TABLE Sommet (
     graphe_id   INT UNSIGNED    NOT NULL,
     nom         VARCHAR(50)     NOT NULL,               -- nom/label du sommet (ex : "A", "Paris")
     valeur      FLOAT           NULL,                   -- valeur associée au sommet (peut être NULL)
-	indice_mat  INT             
+	indice_mat  INT,             
     -- TODO : ajouter d'autres colonnes si nécessaire
     --        (ex : indice dans la matrice d'adjacence pour faciliter le chargement)
 
