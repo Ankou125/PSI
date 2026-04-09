@@ -1,3 +1,4 @@
+create database if not exists TourneeFutee2;
 use TourneeFutee2;
 -- Supprimer les tables dans l'ordre inverse des dépendances (pour réinitialiser)
 DROP TABLE IF EXISTS EtapeTournee;
@@ -5,7 +6,6 @@ DROP TABLE IF EXISTS Tournee;
 DROP TABLE IF EXISTS Arc;
 DROP TABLE IF EXISTS Sommet;
 DROP TABLE IF EXISTS Graphe;
-
 -- =============================================================================
 -- Table : Graphe
 -- Représente un graphe (orienté ou non).
@@ -30,7 +30,7 @@ CREATE TABLE Sommet (
     graphe_id   INT UNSIGNED    NOT NULL,
     nom         VARCHAR(50)     NOT NULL,               -- nom/label du sommet (ex : "A", "Paris")
     valeur      FLOAT           NULL,                   -- valeur associée au sommet (peut être NULL)
-
+	indice_mat  INT             
     -- TODO : ajouter d'autres colonnes si nécessaire
     --        (ex : indice dans la matrice d'adjacence pour faciliter le chargement)
 
