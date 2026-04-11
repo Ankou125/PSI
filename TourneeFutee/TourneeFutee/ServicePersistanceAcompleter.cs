@@ -36,20 +36,23 @@ namespace TourneeFutee
         /// <exception cref="Exception">Levée si la connexion échoue.</exception>
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
-            MySqlConnection maConnexion = null;
-            try
-            {
-                string connexionString = $"SERVER={serverIp}" +
+            this._connectionString = $"SERVER={serverIp};" +
                                          $"DATABASE={dbname};" +
-                                         $"UID={user};PASSWORD={pwd}";
-
-                maConnexion = new MySqlConnection(connexionString);
-                maConnexion.Open();
+                                         $"UID={user};PASSWORD={pwd};";
+            try //test si la connexion fonctionne
+            {
+                using (MySqlConnection maConnexion = new MySqlConnection(this._connectionString)) //connexion fermée automatiquement grâce à using
+                { 
+                    maConnexion.Open();
+                    if (maConnexion.State != ConnectionState.Open)
+                    {
+                        throw new Exception("Connexion non ouverte");
+                    }
+                }
             }
             catch (MySqlException e)
             {
-                Console.WriteLine(" ErreurConnexion : " + e.ToString());
-                return;
+                throw new Exception("Erreur de connexion à la base", e);
             }
         }
 
