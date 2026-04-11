@@ -21,7 +21,7 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
         // Constructeur
         // ─────────────────────────────────────────────────────────────────────
-
+        #region Consignes
         /// <summary>
         /// Instancie un service de persistance et se connecte automatiquement
         /// à la base de données <paramref name="dbname"/> sur le serveur
@@ -34,6 +34,7 @@ namespace TourneeFutee
         /// <param name="user">Nom d'utilisateur.</param>
         /// <param name="pwd">Mot de passe.</param>
         /// <exception cref="Exception">Levée si la connexion échoue.</exception>
+        #endregion 
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
             this._connectionString = $"SERVER={serverIp};" +
@@ -59,28 +60,112 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
         // Méthodes publiques
         // ─────────────────────────────────────────────────────────────────────
-
+        #region Consignes
         /// <summary>
         /// Sauvegarde le graphe <paramref name="g"/> en base de données
         /// (sommets et arcs inclus) et renvoie son identifiant.
         /// </summary>
         /// <param name="g">Le graphe à sauvegarder.</param>
         /// <returns>Identifiant du graphe en base de données (AUTO_INCREMENT).</returns>
+        // TODO : implémenter la sauvegarde du graphe
+        //
+        // Ordre recommandé :
+        //   1. INSERT dans la table Graphe -> récupérer l'id avec LAST_INSERT_ID()
+        //   2. Pour chaque sommet de g : INSERT dans Sommet (valeur + graphe_id)
+        //      -> conserver la correspondance sommet C# <-> id BdD
+        //   3. Pour chaque arc de la matrice d'adjacence (poids != +inf) :
+        //      INSERT dans Arc (sommet_source_id, sommet_dest_id, poids, graphe_id)
+        //
+        // Exemple pour récupérer l'id généré :
+        //   uint id = Convert.ToUInt32(cmd.ExecuteScalar());
+        #endregion
         public uint SaveGraph(Graph g)
         {
-            // TODO : implémenter la sauvegarde du graphe
-            //
-            // Ordre recommandé :
-            //   1. INSERT dans la table Graphe -> récupérer l'id avec LAST_INSERT_ID()
-            //   2. Pour chaque sommet de g : INSERT dans Sommet (valeur + graphe_id)
-            //      -> conserver la correspondance sommet C# <-> id BdD
-            //   3. Pour chaque arc de la matrice d'adjacence (poids != +inf) :
-            //      INSERT dans Arc (sommet_source_id, sommet_dest_id, poids, graphe_id)
-            //
-            // Exemple pour récupérer l'id généré :
-            //   uint id = Convert.ToUInt32(cmd.ExecuteScalar());
-
-            throw new NotImplementedException("SaveGraph non implémenté.");
+            //Insertion du graph
+            uint graphId;
+            using (MySqlConnection connexion = new MySqlConnection(_connectionString)) //gère la connexion
+            {
+                connexion.Open();
+                string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
+                using (MySqlCommand cmdGraph = new MySqlCommand(query, connexion)) //gère la commande SQL pour l'insertion du graph
+                {
+                    cmdGraph.Parameters.AddWithValue("@oriente", g.Directed); //remplace le praramètre SQL par la valeur de Directed
+                    cmdGraph.ExecuteNonQuery(); 
+                }
+                using (MySqlCommand cmdId = new MySqlCommand("SELECT LAST_INSERT_ID();", connexion)) //récupère l'id du graph qu'on vient d'enregistrer
+                {
+                    graphId = Convert.ToUInt32(cmdId.ExecuteScalar());
+                }
+                // Insertion des Sommets
+                Dictionary<int, uint> SommetId=new Dictionary<int, uint>(); //On utilise un dictionnaire pour garder la correspondance sommet-id
+                int i = 0;
+                foreach (var sommet in g.Sommets)
+                {
+                    string querySommet = @"     
+                                INSERT INTO Sommet (graphe_id, nom, valeur)
+                                VALUES (@graphe_id, @nom, @valeur);";
+                    using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, connexion)) //gère la commande SQL pour l'insertion des sommets
+                    {
+                        cmdSommet.Parameters.AddWithValue("@graphe_id", graphId);
+                        cmdSommet.Parameters.AddWithValue("@nom", sommet.Nom);
+                        cmdSommet.Parameters.AddWithValue("@valeur", sommet.Valeur);
+                        cmdSommet.ExecuteNonQuery();
+                    }
+                    using (MySqlCommand cmdID = new MySqlCommand("SELECT LAST_INSERT_ID();", connexion)) //récupère l'id du sommet
+                    {
+                        uint sommetId = Convert.ToUInt32(cmdID.ExecuteScalar());
+                        SommetId[i] = sommetId;
+                    }
+                }
+                //Insertion des arcs
+                if (g.Directed == true) //Si le graph est orienté on parcours toute la matrice
+                {
+                    for (i = 0; i < g.Sommets.Count; i++)
+                    {
+                        for (int j = 0; j < g.Sommets.Count; j++)
+                        {
+                            float poids = g.Matrice.Matrice[i][j];
+                            if (poids != g.Matrice.DefaultValue)
+                            {
+                                using (MySqlCommand cmdArc = new MySqlCommand(
+                                    @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
+                                  VALUES (@gid, @src, @dst, @poids);", connexion))
+                                {
+                                    cmdArc.Parameters.AddWithValue("@gid", graphId);
+                                    cmdArc.Parameters.AddWithValue("@src", SommetId[i]);
+                                    cmdArc.Parameters.AddWithValue("@dst", SommetId[j]);
+                                    cmdArc.Parameters.AddWithValue("@poids", poids);
+                                    cmdArc.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+                }
+                else // Si le graph est non orienté, on ne parcours que la moitié superieur pour ne pas faire de doublons 
+                {
+                    for (i = 0; i < g.Sommets.Count; i++)
+                    {
+                        for (int j = i + 1; j < g.Sommets.Count; j++)
+                        {
+                            float poids = g.Matrice.Matrice[i][j];
+                            if (poids != g.Matrice.DefaultValue)
+                            {
+                                using (MySqlCommand cmd = new MySqlCommand(
+                                    @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
+                                  VALUES (@gid, @src, @dst, @poids);", connexion))
+                                {
+                                    cmd.Parameters.AddWithValue("@gid", graphId);
+                                    cmd.Parameters.AddWithValue("@src", SommetId[i]);
+                                    cmd.Parameters.AddWithValue("@dst", SommetId[j]);
+                                    cmd.Parameters.AddWithValue("@poids", poids);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return graphId;
         }
 
         /// <summary>
