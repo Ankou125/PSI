@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Crypto.Macs;
 using System.Collections.Generic;
 using System.Data;
 
@@ -101,91 +102,105 @@ namespace TourneeFutee
         #endregion
         public uint SaveGraph(Graph g)
         {
-            if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
-                _connection.Open();
-            //Insertion du graph
+            if (g == null)
+                throw new ArgumentNullException(nameof(g));
             uint graphId;
-                string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
-                using (MySqlCommand cmdGraph = new MySqlCommand(query, _connection)) //gère la commande SQL pour l'insertion du graph
+            try
+            {
+                if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                    _connection.Open();
+                using (var transaction = _connection.BeginTransaction())
                 {
-                    cmdGraph.Parameters.AddWithValue("@oriente", g.Directed); //remplace le praramètre SQL par la valeur de Directed
-                    cmdGraph.ExecuteNonQuery(); 
-                }
-                using (MySqlCommand cmdId = new MySqlCommand("SELECT LAST_INSERT_ID();", _connection)) //récupère l'id du graph qu'on vient d'enregistrer
-                {
-                    graphId = Convert.ToUInt32(cmdId.ExecuteScalar());
-                }
-                // Insertion des Sommets
-                SommetId=new Dictionary<int, uint>(); //On utilise un dictionnaire pour garder la correspondance sommet-id
-                int i = 0;
-                foreach (var sommet in g.Sommets)
-                {
-                    string querySommet = @"     
-                                INSERT INTO Sommet (graphe_id, nom, valeur)
-                                VALUES (@graphe_id, @nom, @valeur);";
-                    using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, _connection)) //gère la commande SQL pour l'insertion des sommets
+                   try
                     {
-                        cmdSommet.Parameters.AddWithValue("@graphe_id", graphId);
-                        cmdSommet.Parameters.AddWithValue("@nom", sommet.Nom);
-                        cmdSommet.Parameters.AddWithValue("@valeur", sommet.Valeur);
-                        cmdSommet.ExecuteNonQuery();
-                    }
-                    using (MySqlCommand cmdID = new MySqlCommand("SELECT LAST_INSERT_ID();", _connection)) //récupère l'id du sommet
-                    {
-                        uint sommetId = Convert.ToUInt32(cmdID.ExecuteScalar());
-                        SommetId[i] = sommetId;
-                        sommet.Id = sommetId;
-                        i++;
-                    }
-                }
-                //Insertion des arcs
-                if (g.Directed == true) //Si le graph est orienté on parcours toute la matrice
-                {
-                    for (i = 0; i < g.Sommets.Count; i++)
-                    {
-                        for (int j = 0; j < g.Sommets.Count; j++)
+                        //Insertion du graph
+                        string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
+                        using (MySqlCommand cmdGraph = new MySqlCommand(query, _connection)) //gère la commande SQL pour l'insertion du graph
                         {
-                            float poids = g.Matrice.Matrice[i][j];
-                            if (poids != g.Matrice.DefaultValue)
+                            cmdGraph.Transaction = transaction;
+                            cmdGraph.Parameters.AddWithValue("@oriente", g.Directed); //remplace le praramètre SQL par la valeur de Directed
+                            cmdGraph.ExecuteNonQuery();
+                            graphId = (uint)cmdGraph.LastInsertedId;
+                        }
+                        foreach (var sommet in g.Sommets)
+                        {
+                            string querySommet = @"     
+                                        INSERT INTO Sommet (graphe_id, nom, valeur)
+                                        VALUES (@graphe_id, @nom, @valeur);";
+                            using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, _connection)) //gère la commande SQL pour l'insertion des sommets
                             {
-                                using (MySqlCommand cmdArc = new MySqlCommand(
-                                    @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
-                                  VALUES (@gid, @src, @dst, @poids);", _connection))
+                                cmdSommet.Transaction = transaction;
+                                cmdSommet.Parameters.AddWithValue("@graphe_id", graphId);
+                                cmdSommet.Parameters.AddWithValue("@nom", sommet.Nom);
+                                cmdSommet.Parameters.AddWithValue("@valeur", sommet.Valeur);
+                                cmdSommet.ExecuteNonQuery();
+                                sommet.Id = (uint)cmdSommet.LastInsertedId;
+                            }
+                        }
+                        //Insertion des arcs
+                        int i = 0;
+                        if (g.Directed) //Si le graph est orienté on parcours toute la matrice
+                        {
+                            for (i = 0; i < g.Sommets.Count; i++)
+                            {
+                                for (int j = 0; j < g.Sommets.Count; j++)
                                 {
-                                    cmdArc.Parameters.AddWithValue("@gid", graphId);
-                                    cmdArc.Parameters.AddWithValue("@src", SommetId[i]);
-                                    cmdArc.Parameters.AddWithValue("@dst", SommetId[j]);
-                                    cmdArc.Parameters.AddWithValue("@poids", poids);
-                                    cmdArc.ExecuteNonQuery();
+                                    float poids = g.Matrice.Matrice[i][j];
+                                    if (Math.Abs(poids - g.Matrice.DefaultValue) > 0.0001f) //Moins risqué pour les float
+                                    {
+                                        using (MySqlCommand cmdArc = new MySqlCommand(
+                                         @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
+                                        VALUES (@gid, @src, @dst, @poids);", _connection))
+                                        {
+                                            cmdArc.Transaction = transaction;
+                                            cmdArc.Parameters.AddWithValue("@gid", graphId);
+                                            cmdArc.Parameters.AddWithValue("@src", g.Sommets[i].Id);
+                                            cmdArc.Parameters.AddWithValue("@dst", g.Sommets[j].Id);
+                                            cmdArc.Parameters.AddWithValue("@poids", poids);
+                                            cmdArc.ExecuteNonQuery();
+                                        }
+                                           }
+                                }
+                            }
+                       }
+                        else // Si le graph est non orienté, on ne parcours que la moitié superieur pour ne pas faire de doublons 
+                        {
+                            for (i = 0; i < g.Sommets.Count; i++)
+                            {
+                                for (int j = i + 1; j < g.Sommets.Count; j++)
+                                {
+                                    float poids = g.Matrice.Matrice[i][j];
+                                    if (Math.Abs(poids - g.Matrice.DefaultValue) > 0.0001f)
+                                    {
+                                        using (MySqlCommand cmd = new MySqlCommand(
+                                            @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
+                                        VALUES (@gid, @src, @dst, @poids);", _connection))
+                                        {
+                                            cmd.Transaction = transaction;
+                                            cmd.Parameters.AddWithValue("@gid", graphId);
+                                            cmd.Parameters.AddWithValue("@src", g.Sommets[i].Id);
+                                            cmd.Parameters.AddWithValue("@dst", g.Sommets[j].Id);
+                                            cmd.Parameters.AddWithValue("@poids", poids);
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                    }
                                 }
                             }
                         }
+                        transaction.Commit();
                     }
-                }
-                else // Si le graph est non orienté, on ne parcours que la moitié superieur pour ne pas faire de doublons 
-                {
-                    for (i = 0; i < g.Sommets.Count; i++)
+                    catch
                     {
-                        for (int j = i + 1; j < g.Sommets.Count; j++)
-                        {
-                            float poids = g.Matrice.Matrice[i][j];
-                            if (poids != g.Matrice.DefaultValue)
-                            {
-                                using (MySqlCommand cmd = new MySqlCommand(
-                                    @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
-                                  VALUES (@gid, @src, @dst, @poids);", _connection))
-                                {
-                                    cmd.Parameters.AddWithValue("@gid", graphId);
-                                    cmd.Parameters.AddWithValue("@src", SommetId[i]);
-                                    cmd.Parameters.AddWithValue("@dst", SommetId[j]);
-                                    cmd.Parameters.AddWithValue("@poids", poids);
-                                    cmd.ExecuteNonQuery();
-                                }
-                            }
-                        }
+                        transaction.Rollback();
+                        throw;
                     }
                 }
-            return graphId;
+                return graphId;
+            }
+            finally
+            {
+                CloseConnection();
+            }
         }
 
         /// <summary>

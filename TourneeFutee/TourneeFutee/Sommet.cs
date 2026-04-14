@@ -22,6 +22,14 @@ namespace TourneeFutee
             this.id = 0;
             compteur++;
         }
+        public Sommet(string nom)
+        {
+            this.nom = nom;
+            this.valeur = 0;
+            this.indice = compteur;
+            this.id = 0;
+            compteur++;
+        }
 
         public string Nom
         {

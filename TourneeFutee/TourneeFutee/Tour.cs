@@ -72,9 +72,27 @@
             }
         }
 
-        public List<Sommet> Tri()
+        public List<Sommet> Tri(Graph g) //Tri une liste de segment et en ressort la liste des sommets dans l'ordre de parcours
         {
-
+            if (parcour == null || parcour.Count == 0)
+                return new List<Sommet>();
+            var map = parcour.ToDictionary(p => p.source, p => p.destination);
+            Sommet start = parcour[0].source; //Point de départ
+            var result = new List<Sommet>();
+            var visited = new HashSet<Sommet>();
+            Sommet current = start;
+            while (!visited.Contains(current))
+            {
+                result.Add(current);
+                visited.Add(current);
+                if (!map.ContainsKey(current))
+                    throw new Exception("Cycle invalide");
+                current = map[current];
+            }
+            if (current != start)
+                throw new Exception("Cycle pas fermé");
+            return result;
         }
     }
 }
+
