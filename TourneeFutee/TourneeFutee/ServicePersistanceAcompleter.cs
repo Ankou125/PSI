@@ -1,5 +1,6 @@
-using System.Data;
+using Google.Protobuf.WellKnownTypes;
 using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace TourneeFutee
 {
@@ -14,6 +15,8 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
 
         private readonly string _connectionString;
+        Dictionary<int, uint> sommetId ;
+        Dictionary<int, uint> etapId;
 
         // TODO : si vous avez besoin de maintenir une connexion ouverte,
         //        ajoutez un attribut MySqlConnection ici.
@@ -21,6 +24,16 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
         // Constructeur
         // ─────────────────────────────────────────────────────────────────────
+        public Dictionary<int, uint> SommetId 
+        {
+            get { return this.sommetId ; }
+            set { this.sommetId = value; }
+        }
+        public Dictionary<int, uint> EtapeId
+        {
+            get { return this.sommetId ; }
+            set { this.sommetId = value; }
+        }
         #region Consignes
         /// <summary>
         /// Instancie un service de persistance et se connecte automatiquement
@@ -83,9 +96,6 @@ namespace TourneeFutee
         {
             //Insertion du graph
             uint graphId;
-            using (MySqlConnection connexion = new MySqlConnection(_connectionString)) //gère la connexion
-            {
-                connexion.Open();
                 string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
                 using (MySqlCommand cmdGraph = new MySqlCommand(query, connexion)) //gère la commande SQL pour l'insertion du graph
                 {
@@ -115,6 +125,7 @@ namespace TourneeFutee
                     {
                         uint sommetId = Convert.ToUInt32(cmdID.ExecuteScalar());
                         SommetId[i] = sommetId;
+                        i++;
                     }
                 }
                 //Insertion des arcs
@@ -164,7 +175,6 @@ namespace TourneeFutee
                         }
                     }
                 }
-            }
             return graphId;
         }
 
@@ -189,6 +199,7 @@ namespace TourneeFutee
             throw new NotImplementedException("LoadGraph non implémenté.");
         }
 
+        #region Consignes
         /// <summary>
         /// Sauvegarde la tournée <paramref name="t"/> (effectuée dans le graphe
         /// identifié par <paramref name="graphId"/>) en base de données
@@ -197,20 +208,60 @@ namespace TourneeFutee
         /// <param name="graphId">Identifiant BdD du graphe dans lequel la tournée a été calculée.</param>
         /// <param name="t">La tournée à sauvegarder.</param>
         /// <returns>Identifiant de la tournée en base de données (AUTO_INCREMENT).</returns>
+        /// // TODO : implémenter la sauvegarde de la tournée
+        //
+        // Ordre recommandé :
+        //   1. INSERT dans Tournee (cout_total, graphe_id) -> récupérer l'id
+        //   2. Pour chaque sommet de la séquence (avec son numéro d'ordre) :
+        //      INSERT dans EtapeTournee (tournee_id, numero_ordre, sommet_id)
+        //
+        // Attention : conserver l'ordre des étapes est essentiel pour
+        //             pouvoir reconstruire la tournée fidèlement au chargement.
+        #endregion 
         public uint SaveTour(uint graphId, Tour t)
         {
-            // TODO : implémenter la sauvegarde de la tournée
-            //
-            // Ordre recommandé :
-            //   1. INSERT dans Tournee (cout_total, graphe_id) -> récupérer l'id
-            //   2. Pour chaque sommet de la séquence (avec son numéro d'ordre) :
-            //      INSERT dans EtapeTournee (tournee_id, numero_ordre, sommet_id)
-            //
-            // Attention : conserver l'ordre des étapes est essentiel pour
-            //             pouvoir reconstruire la tournée fidèlement au chargement.
-
-            throw new NotImplementedException("SaveTour non implémenté.");
-        }
+            uint idTour;
+            List<Sommet>Odre=Tour.Tri(t);
+                //Insertion de la Tournée
+                string query = "INSERT INTO Tournee (graphe_id) VALUES (@graphId);";
+                using (MySqlCommand cmdTour = new MySqlCommand(query, connexion)) //gère la commande SQL pour l'insertion du graph
+                {
+                    cmdTour.Parameters.AddWithValue("@graphId", graphId); //remplace le praramètre SQL par l'id du graph
+                    cmdTour.ExecuteNonQuery();
+                }
+                query = "INSERT INTO Tournee (cout_total) VALUES (@cout);";
+                using (MySqlCommand cmdTour = new MySqlCommand(query, connexion)) //gère la commande SQL pour l'insertion du graph
+                {
+                    cmdTour.Parameters.AddWithValue("@cout", t.Cost); //remplace le praramètre SQL par la valeur de cost
+                    cmdTour.ExecuteNonQuery();
+                }
+                using (MySqlCommand cmdId = new MySqlCommand("SELECT LAST_INSERT_ID();", connexion)) //récupère l'id de la tournée qu'on vient d'enregistrer
+                {
+                    idTour = Convert.ToUInt32(cmdId.ExecuteScalar());
+                }
+                //Insertion Etapes de la tournée
+                Dictionary<int, uint> EtapeId = new Dictionary<int, uint>(); //On utilise un dictionnaire pour garder la correspondance étapes-id
+                int i = 0;
+                foreach ((string source, string destination) in t.Parcour)
+                {
+                    string queryEtape = @"     
+                                INSERT INTO Sommet (graphe_id, nom, valeur)
+                                VALUES (@graphe_id, @nom, @valeur);";
+                    using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, connexion)) //gère la commande SQL pour l'insertion des sommets
+                    {
+                        cmdSommet.Parameters.AddWithValue("@graphe_id", graphId);
+                        cmdSommet.Parameters.AddWithValue("@nom", sommet.Nom);
+                        cmdSommet.Parameters.AddWithValue("@valeur", sommet.Valeur);
+                        cmdSommet.ExecuteNonQuery();
+                    }
+                    using (MySqlCommand cmdID = new MySqlCommand("SELECT LAST_INSERT_ID();", connexion)) //récupère l'id du sommet
+                    {
+                        uint sommetId = Convert.ToUInt32(cmdID.ExecuteScalar());
+                        SommetId[i] = sommetId;
+                    }
+                }
+                return idTour;
+            }
 
         /// <summary>
         /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
