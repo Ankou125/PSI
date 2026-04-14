@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Crypto.Macs;
 using System.Collections.Generic;
 using System.Data;
+using System.Transactions;
 
 namespace TourneeFutee
 {
@@ -265,52 +266,61 @@ namespace TourneeFutee
         // Attention : conserver l'ordre des étapes est essentiel pour
         //             pouvoir reconstruire la tournée fidèlement au chargement.
         #endregion 
-        public uint SaveTour(uint graphId, Tour t)
+        public uint SaveTour(uint graphId, Tour t) //Tri + enregistrement Etapes
         {
-            if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
-                _connection.Open();
             uint idTour;
-            List<Sommet> Ordre = Tour.Tri(t);
-            //Insertion de la Tournée
-            string query = "INSERT INTO Tournee (graphe_id) VALUES (@graphId);";
-            using (MySqlCommand cmdTour = new MySqlCommand(query, _connection)) //gère la commande SQL 
+            if (t == null)
+                throw new ArgumentNullException(nameof(t));
+            try
             {
-                cmdTour.Parameters.AddWithValue("@graphId", graphId); //remplace le praramètre SQL par l'id du graph
-                cmdTour.ExecuteNonQuery();
-            }
-            query = "INSERT INTO Tournee (cout_total) VALUES (@cout);";
-            using (MySqlCommand cmdTour = new MySqlCommand(query, _connection)) //gère la commande SQL 
-            {
-                cmdTour.Parameters.AddWithValue("@cout", t.Cost); //remplace le praramètre SQL par la valeur de cost
-                cmdTour.ExecuteNonQuery();
-            }
-            using (MySqlCommand cmdId = new MySqlCommand("SELECT LAST_INSERT_ID();", _connection)) //récupère l'id de la tournée qu'on vient d'enregistrer
-            {
-                idTour = Convert.ToUInt32(cmdId.ExecuteScalar());
-            }
-            //Insertion Etapes de la tournée
-            EtapeId = new Dictionary<int, uint>(); //On utilise un dictionnaire pour garder la correspondance étapes-id
-            int i = 0;
-            while(i<Ordre.Count)
-            {
-                string queryEtape = @"     
+                if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                    _connection.Open();
+                using (var transaction = _connection.BeginTransaction())
+                {
+                    try
+                    {
+                        List<Sommet> Ordre = Tour.Tri(t);
+                        //Insertion de la Tournée
+                        string query = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId,@cout);";
+                        using (MySqlCommand cmdTour = new MySqlCommand(query, _connection)) //gère la commande SQL 
+                        {
+                            cmdTour.Transaction = transaction;
+                            cmdTour.Parameters.AddWithValue("@graphId", graphId); //remplace le praramètre SQL par l'id du graph
+                            cmdTour.Parameters.AddWithValue("@cout", t.Cost); //remplace le praramètre SQL par la valeur de cost
+                            cmdTour.ExecuteNonQuery();
+                            idTour = (uint)cmdTour.LastInsertedId; //Récupère l'id de la tournée enregistrée
+                        }
+                        //Insertion Etapes de la tournée
+                        int i = 0;
+                        while (i < Ordre.Count)
+                        {
+                            string queryEtape = @"     
                             INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id)
                             VALUES (@tournee_id, @ordre, @sommet_id);";
-                using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, _connection)) //gère la commande SQL pour l'insertion des sommets
-                {
-                    cmdEtape.Parameters.AddWithValue("@tournee_id", idTour);
-                    cmdEtape.Parameters.AddWithValue("@ordre", i);
-                    cmdEtape.Parameters.AddWithValue("@sommet_id", Ordre[i].Id);
-                    cmdEtape.ExecuteNonQuery();
-                }
-                using (MySqlCommand cmdID = new MySqlCommand("SELECT LAST_INSERT_ID();", _connection)) //récupère l'id du sommet
-                {
-                    uint etapeId = Convert.ToUInt32(cmdID.ExecuteScalar());
-                    EtapeId[i] = etapeId;
-                    i++;
+                            using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, _connection)) //gère la commande SQL pour l'insertion des sommets
+                            {
+                                cmdEtape.Transaction = transaction;
+                                cmdEtape.Parameters.AddWithValue("@tournee_id", idTour);
+                                cmdEtape.Parameters.AddWithValue("@ordre", i);
+                                cmdEtape.Parameters.AddWithValue("@sommet_id", Ordre[i].Id);
+                                cmdEtape.ExecuteNonQuery();
+                            }
+                            i++;
+                        }
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                    return idTour;
                 }
             }
-            return idTour;
+            finally
+            {
+                CloseConnection();
+            }
         }
         /// <summary>
         /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
