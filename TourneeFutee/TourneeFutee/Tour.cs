@@ -71,5 +71,10 @@
                 Console.WriteLine(segment.source+" --> "+segment.destination);
             }
         }
+
+        public List<Sommet> Tri()
+        {
+
+        }
     }
 }

@@ -12,12 +12,14 @@ namespace TourneeFutee
         private string nom;
         private float valeur;
         private int indice;
+        uint id;
 
         public Sommet(string nom, float valeur)
         {
             this.nom = nom;
             this.valeur = valeur;
             this.indice = compteur;
+            this.id = 0;
             compteur++;
         }
 
@@ -34,6 +36,11 @@ namespace TourneeFutee
         {
             get { return indice; }
             set { indice = value; }
+        }
+        public uint Id
+        {
+            get { return this.id; }
+            set { this.id = value; }
         }
     }
 }
