@@ -20,6 +20,7 @@ namespace TourneeFutee
 
         // TODO : si vous avez besoin de maintenir une connexion ouverte,
         //        ajoutez un attribut MySqlConnection ici.
+        private readonly MySqlConnection _connection;
 
         // ─────────────────────────────────────────────────────────────────────
         // Constructeur
@@ -47,7 +48,7 @@ namespace TourneeFutee
         /// <param name="user">Nom d'utilisateur.</param>
         /// <param name="pwd">Mot de passe.</param>
         /// <exception cref="Exception">Levée si la connexion échoue.</exception>
-        #endregion 
+        #endregion
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
             this._connectionString = $"SERVER={serverIp};" +
@@ -55,18 +56,23 @@ namespace TourneeFutee
                                          $"UID={user};PASSWORD={pwd};";
             try //test si la connexion fonctionne
             {
-                using (MySqlConnection maConnexion = new MySqlConnection(this._connectionString)) //connexion fermée automatiquement grâce à using
-                { 
-                    maConnexion.Open();
-                    if (maConnexion.State != ConnectionState.Open)
-                    {
-                        throw new Exception("Connexion non ouverte");
-                    }
+                _connection = new MySqlConnection(this._connectionString);
+                _connection.Open();
+                if (_connection.State != ConnectionState.Open)
+                {
+                    throw new Exception("Connexion non ouverte");
                 }
             }
-            catch (MySqlException e)
+            catch (Exception e) 
             {
                 throw new Exception("Erreur de connexion à la base", e);
+            }     
+        }
+        public void CloseConnection() //méthode pour fermer la connexion
+        {
+            if (_connection != null && _connection.State == ConnectionState.Open)
+            {
+                _connection.Close();
             }
         }
 
@@ -187,16 +193,38 @@ namespace TourneeFutee
         public Graph LoadGraph(uint id)
         {
             // TODO : implémenter le chargement du graphe
-            //
-            // Ordre recommandé :
-            //   1. SELECT dans Graphe WHERE id = @id -> récupérer IsOriented, etc.
-            //   2. SELECT dans Sommet WHERE graphe_id = @id -> reconstruire les sommets
-            //      (respecter l'ordre d'insertion pour que les indices de la matrice
-            //       correspondent à ceux sauvegardés)
-            //   3. SELECT dans Arc WHERE graphe_id = @id -> reconstruire la matrice
-            //      d'adjacence en utilisant les correspondances sommet_id <-> indice
+            using (MySqlConnection connexion = new MySqlConnection(_connectionString)) //gère la connexion
+            {
+                connexion.Open();
+                string requete = "SELECT * FROM Graphe WHERE id = @id;";
+                MySqlCommand command = connexion.CreateCommand();
+                command.CommandText = requete;
+                MySqlDataReader reader = command.ExecuteReader();
 
-            throw new NotImplementedException("LoadGraph non implémenté.");
+                string[] valueString = new string[reader.FieldCount];
+                while (reader.Read())
+                {
+                    MySqlDataReader reader = command1.ExecuteReader();
+
+                    string[] valueString = new string[reader.FieldCount];
+                    while (reader.Read())
+                    {
+
+
+                        string requete1 = "SELECT * FROM Sommet WHERE graphe_id = @id ORDER BY id;";
+                        string requete2 = "SELECT * FROM Arc WHERE graphe_id = @id;";
+                        // Ordre recommandé :
+                        //   1. SELECT dans Graphe WHERE id = @id -> récupérer IsOriented, etc.
+                        //   2. SELECT dans Sommet WHERE graphe_id = @id -> reconstruire les sommets
+                        //      (respecter l'ordre d'insertion pour que les indices de la matrice
+                        //       correspondent à ceux sauvegardés)
+                        //   3. SELECT dans Arc WHERE graphe_id = @id -> reconstruire la matrice
+                        //      d'adjacence en utilisant les correspondances sommet_id <-> indice
+
+                        throw new NotImplementedException("LoadGraph non implémenté.");
+                    }
+                }
+            }
         }
 
         #region Consignes
