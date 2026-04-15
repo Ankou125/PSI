@@ -203,13 +203,14 @@ namespace TourneeFutee
                 CloseConnection();
             }
         }
-
+        #region Consignes
         /// <summary>
         /// Charge depuis la base de données le graphe identifié par <paramref name="id"/>
         /// et renvoie une instance de la classe <see cref="Graph"/>.
         /// </summary>
         /// <param name="id">Identifiant du graphe à charger.</param>
         /// <returns>Instance de <see cref="Graph"/> reconstituée.</returns>
+        #endregion 
         public Graph LoadGraph(uint id)
         {
             // TODO : implémenter le chargement du graphe
@@ -279,7 +280,7 @@ namespace TourneeFutee
                 {
                     try
                     {
-                        List<Sommet> Ordre = Tour.Tri(t);
+                        List<Sommet> Ordre =Tour.Tri(t);
                         //Insertion de la Tournée
                         string query = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId,@cout);";
                         using (MySqlCommand cmdTour = new MySqlCommand(query, _connection)) //gère la commande SQL 
@@ -322,12 +323,14 @@ namespace TourneeFutee
                 CloseConnection();
             }
         }
+        #region Consignes
         /// <summary>
         /// Charge depuis la base de données la tournée identifiée par <paramref name="id"/>
         /// et renvoie une instance de la classe <see cref="Tour"/>.
         /// </summary>
         /// <param name="id">Identifiant de la tournée à charger.</param>
         /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
+        #endregion
         public Tour LoadTour(uint id)
         {
             // TODO : implémenter le chargement de la tournée

@@ -72,25 +72,26 @@
             }
         }
 
-        public List<Sommet> Tri(Graph g) //Tri une liste de segment et en ressort la liste des sommets dans l'ordre de parcours
+        static public List<Sommet> Tri(Tour t) //Tri une liste de segment et en ressort la liste des sommets dans l'ordre de parcours
         {
-            if (parcour == null || parcour.Count == 0)
-                return new List<Sommet>();
-            var map = parcour.ToDictionary(p => p.source, p => p.destination);
-            Sommet start = parcour[0].source; //Point de départ
             var result = new List<Sommet>();
-            var visited = new HashSet<Sommet>();
-            Sommet current = start;
-            while (!visited.Contains(current))
+            if (t == null || t.parcour == null || t.parcour.Count == 0)
+                return result;
+            var nextMap = new Dictionary<string, string>(); // dictionnaire pour accéder rapidement au segment suivant
+            foreach (var (source, destination) in t.parcour)
             {
-                result.Add(current);
-                visited.Add(current);
-                if (!map.ContainsKey(current))
-                    throw new Exception("Cycle invalide");
-                current = map[current];
+                nextMap[source] = destination;
             }
-            if (current != start)
-                throw new Exception("Cycle pas fermé");
+            var start = t.parcour[0].source;  //On commence avec le premier segment
+            var current = start;
+            do
+            {
+                result.Add(new Sommet(current));
+                if (!nextMap.ContainsKey(current))
+                    throw new Exception("Cycle invalide");
+                current = nextMap[current];
+
+            } while (current != start);
             return result;
         }
     }
