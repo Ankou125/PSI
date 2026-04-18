@@ -16,13 +16,11 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
         // Attributs privés
         // ─────────────────────────────────────────────────────────────────────
-
         private readonly string _connectionString;
         Dictionary<int, uint> sommetId;
         Dictionary<int, uint> etapId;
 
-        // TODO : si vous avez besoin de maintenir une connexion ouverte,
-        //        ajoutez un attribut MySqlConnection ici.
+        // TODO : si vous avez besoin de maintenir une connexion ouverte,  ajoutez un attribut MySqlConnection ici.
         private readonly MySqlConnection _connection;
 
         // ─────────────────────────────────────────────────────────────────────
@@ -219,11 +217,11 @@ namespace TourneeFutee
             {
                 bool estOriente;
                 int nbSommets;
-                string requete = "SELECT * FROM Graphe WHERE id = @id;"; // Récupère les informations du graphe (est_oriente)
-                using (MySqlCommand cmdGraphe = new MySqlCommand(requete, _connection))
+                string requete = "SELECT est_oriente, nb_sommets FROM Graphe WHERE id = @id;"; // Récupère les informations du graphe (est_oriente)
+                using (MySqlCommand commandeGraphe = new MySqlCommand(requete, _connection))
                 {
-                    cmdGraphe.Parameters.AddWithValue("@id", id);
-                    using (MySqlDataReader readerGraphe = cmdGraphe.ExecuteReader())
+                    commandeGraphe.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader readerGraphe = commandeGraphe.ExecuteReader())
                     {
                         if (readerGraphe.Read())
                         {
@@ -236,10 +234,9 @@ namespace TourneeFutee
                         }
                     }
                 }
-
-                List<Sommet> sommets = new List<Sommet>(); // Charger les sommets dans l'ordre
+                Graph g = new Graph(estOriente);
                 Dictionary<uint, int> idSommetVersIndex = new Dictionary<uint, int>(); // Pour faire le lien entre les id des sommets en BdD et leurs indices dans la matrice
-                string requeteSommets = "SELECT * FROM Sommet WHERE graphe_id = @id ORDER BY id;"; // Récupère les sommets du graphe
+                string requeteSommets = @"SELECT id, nom, valeur, indice_mat FROM Sommet WHERE graphe_id = @id ORDER BY indice_mat;" // Récupère les sommets du graphe
                 using (MySqlCommand cmdSommets = new MySqlCommand(requeteSommets, _connection))
                 {
                     cmdSommets.Parameters.AddWithValue("@id", id);
@@ -248,22 +245,20 @@ namespace TourneeFutee
                         int index = 0;
                         while (readerSommets.Read())
                         {
-                            uint idSommet = (uint)readerSommets["id"];
+                            uint idSommet = Convert.ToUInt32(readerSommets["id"]);
                             string nom = readerSommets["nom"].ToString();
-                            float valeur = readerSommets["valeur"] != DBNull.Value ? Convert.ToSingle(readerSommets["valeur"]) : 0;
-                            Sommet s = new Sommet(nom, valeur);
-                            s.Id = idSommet;
-                            sommets.Add(s);
-                            idSommetVersIndex[idSommet] = Sommet.Count - 1;
+                            float valeur = readerSommets["valeur"] == DBNull.Value ? 0 : Convert.ToSingle(readerSommets["valeur"]);
+                            g.AddVertex(nom, valeur);
+                            g.Sommets[g.Sommets.Count - 1].Id = idSommet; // Associe l'id du sommet en BdD à l'objet Sommet dans le graphe
+                            idSommetVersIndex[idSommet] = nom;
                         }
                     }
                 }
-                if (sommets.Count != nbSommets)
+                if (g.Sommets.Count != nbSommets)
                 {
                     throw new Exception("Nombre de sommets récupérés ne correspond pas au nombre indiqué dans la table Graphe");
                 }
-                Graph g = new Graph(estOriente, sommets);
-                string requeteArcs = "SELECT * FROM Arc WHERE graphe_id = @id;"; // Récupère les arcs du graphe
+                string requeteArcs = @"SELECT sommet_source, sommet_dest, poids FROM ArcWHERE graphe_id = @id;";// Récupère les arcs du graphe
                 using (MySqlCommand cmdArcs = new MySqlCommand(requeteArcs, _connection))
                 {
                     cmdArcs.Parameters.AddWithValue("@id", id);
@@ -284,7 +279,13 @@ namespace TourneeFutee
                         }
                     }
                 }
+                return g;
             }
+            finally
+            {
+                CloseConnection();
+            }
+        }
 
         #region Consignes
             /// <summary>
@@ -415,7 +416,7 @@ namespace TourneeFutee
                     {
                         while (readerEtapes.Read())
                         {
-                            Sommet sommet = new Sommet
+                            Sommet sommet = new Sommet(queryEtapes, coutTotal);
                             {
                                 string nom = readerEtapes["nom"].ToString();
                                 float valeur = readerEtapes["valeur"] != DBNull.Value ? 0 : Convert.ToSingle(readerEtapes["valeur"]);
