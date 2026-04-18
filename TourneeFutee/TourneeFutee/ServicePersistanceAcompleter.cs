@@ -18,7 +18,7 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
 
         private readonly string _connectionString;
-        Dictionary<int, uint> sommetId ;
+        Dictionary<int, uint> sommetId;
         Dictionary<int, uint> etapId;
 
         // TODO : si vous avez besoin de maintenir une connexion ouverte,
@@ -28,14 +28,14 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
         // Constructeur
         // ─────────────────────────────────────────────────────────────────────
-        public Dictionary<int, uint> SommetId 
+        public Dictionary<int, uint> SommetId
         {
-            get { return this.sommetId ; }
+            get { return this.sommetId; }
             set { this.sommetId = value; }
         }
         public Dictionary<int, uint> EtapeId
         {
-            get { return this.etapId ; }
+            get { return this.etapId; }
             set { this.etapId = value; }
         }
         #region Consignes
@@ -66,10 +66,10 @@ namespace TourneeFutee
                     throw new Exception("Connexion non ouverte");
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 throw new Exception("Erreur de connexion à la base", e);
-            }     
+            }
         }
         public void CloseConnection() //méthode pour fermer la connexion
         {
@@ -112,7 +112,7 @@ namespace TourneeFutee
                     _connection.Open();
                 using (var transaction = _connection.BeginTransaction())
                 {
-                   try
+                    try
                     {
                         //Insertion du graph
                         string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
@@ -160,10 +160,10 @@ namespace TourneeFutee
                                             cmdArc.Parameters.AddWithValue("@poids", poids);
                                             cmdArc.ExecuteNonQuery();
                                         }
-                                           }
+                                    }
                                 }
                             }
-                       }
+                        }
                         else // Si le graph est non orienté, on ne parcours que la moitié superieur pour ne pas faire de doublons 
                         {
                             for (i = 0; i < g.Sommets.Count; i++)
@@ -213,60 +213,98 @@ namespace TourneeFutee
         #endregion 
         public Graph LoadGraph(uint id)
         {
-            // TODO : implémenter le chargement du graphe
-            using (MySqlConnection connexion = new MySqlConnection(_connectionString)) //gère la connexion
+            if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                _connection.Open();
+            try
             {
-                connexion.Open();
-                string requete = "SELECT * FROM Graphe WHERE id = @id;";
-                MySqlCommand command = connexion.CreateCommand();
-                command.CommandText = requete;
-                MySqlDataReader reader = command.ExecuteReader();
-
-                string[] valueString = new string[reader.FieldCount];
-                while (reader.Read())
+                bool estOriente;
+                int nbSommets;
+                string requete = "SELECT * FROM Graphe WHERE id = @id;"; // Récupère les informations du graphe (est_oriente)
+                using (MySqlCommand cmdGraphe = new MySqlCommand(requete, _connection))
                 {
-                    MySqlDataReader reader = command1.ExecuteReader();
-
-                    string[] valueString = new string[reader.FieldCount];
-                    while (reader.Read())
+                    cmdGraphe.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader readerGraphe = cmdGraphe.ExecuteReader())
                     {
+                        if (readerGraphe.Read())
+                        {
+                            estOriente = Convert.ToBoolean(readerGraphe["est_oriente"]);
+                            nbSommets = Convert.ToInt32(readerGraphe["nb_sommets"]);
+                        }
+                        else
+                        {
+                            throw new Exception("Graphe non trouvé");
+                        }
+                    }
+                }
 
-
-                        string requete1 = "SELECT * FROM Sommet WHERE graphe_id = @id ORDER BY id;";
-                        string requete2 = "SELECT * FROM Arc WHERE graphe_id = @id;";
-                        // Ordre recommandé :
-                        //   1. SELECT dans Graphe WHERE id = @id -> récupérer IsOriented, etc.
-                        //   2. SELECT dans Sommet WHERE graphe_id = @id -> reconstruire les sommets
-                        //      (respecter l'ordre d'insertion pour que les indices de la matrice
-                        //       correspondent à ceux sauvegardés)
-                        //   3. SELECT dans Arc WHERE graphe_id = @id -> reconstruire la matrice
-                        //      d'adjacence en utilisant les correspondances sommet_id <-> indice
-
-                        throw new NotImplementedException("LoadGraph non implémenté.");
+                List<Sommet> sommets = new List<Sommet>(); // Charger les sommets dans l'ordre
+                Dictionary<uint, int> idSommetVersIndex = new Dictionary<uint, int>(); // Pour faire le lien entre les id des sommets en BdD et leurs indices dans la matrice
+                string requeteSommets = "SELECT * FROM Sommet WHERE graphe_id = @id ORDER BY id;"; // Récupère les sommets du graphe
+                using (MySqlCommand cmdSommets = new MySqlCommand(requeteSommets, _connection))
+                {
+                    cmdSommets.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader readerSommets = cmdSommets.ExecuteReader())
+                    {
+                        int index = 0;
+                        while (readerSommets.Read())
+                        {
+                            uint idSommet = (uint)readerSommets["id"];
+                            string nom = readerSommets["nom"].ToString();
+                            float valeur = readerSommets["valeur"] != DBNull.Value ? Convert.ToSingle(readerSommets["valeur"]) : 0;
+                            Sommet s = new Sommet(nom, valeur);
+                            s.Id = idSommet;
+                            sommets.Add(s);
+                            idSommetVersIndex[idSommet] = Sommet.Count - 1;
+                        }
+                    }
+                }
+                if (sommets.Count != nbSommets)
+                {
+                    throw new Exception("Nombre de sommets récupérés ne correspond pas au nombre indiqué dans la table Graphe");
+                }
+                Graph g = new Graph(estOriente, sommets);
+                string requeteArcs = "SELECT * FROM Arc WHERE graphe_id = @id;"; // Récupère les arcs du graphe
+                using (MySqlCommand cmdArcs = new MySqlCommand(requeteArcs, _connection))
+                {
+                    cmdArcs.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader readerArcs = cmdArcs.ExecuteReader())
+                    {
+                        while (readerArcs.Read())
+                        {
+                            uint idSource = (uint)readerArcs["sommet_source"];
+                            uint idDest = (uint)readerArcs["sommet_dest"];
+                            float poids = Convert.ToSingle(readerArcs["poids"]);
+                            int indexSource = idSommetVersIndex[idSource];
+                            int indexDest = idSommetVersIndex[idDest];
+                            g.Matrice.Matrice[indexSource][indexDest] = poids;
+                            if (!estOriente)
+                            {
+                                g.Matrice.Matrice[indexDest][indexSource] = poids; // Si le graphe est non orienté, on remplit aussi la case symétrique
+                            }
+                        }
                     }
                 }
             }
-        }
 
         #region Consignes
-        /// <summary>
-        /// Sauvegarde la tournée <paramref name="t"/> (effectuée dans le graphe
-        /// identifié par <paramref name="graphId"/>) en base de données
-        /// et renvoie son identifiant.
-        /// </summary>
-        /// <param name="graphId">Identifiant BdD du graphe dans lequel la tournée a été calculée.</param>
-        /// <param name="t">La tournée à sauvegarder.</param>
-        /// <returns>Identifiant de la tournée en base de données (AUTO_INCREMENT).</returns>
-        /// // TODO : implémenter la sauvegarde de la tournée
-        //
-        // Ordre recommandé :
-        //   1. INSERT dans Tournee (cout_total, graphe_id) -> récupérer l'id
-        //   2. Pour chaque sommet de la séquence (avec son numéro d'ordre) :
-        //      INSERT dans EtapeTournee (tournee_id, numero_ordre, sommet_id)
-        //
-        // Attention : conserver l'ordre des étapes est essentiel pour
-        //             pouvoir reconstruire la tournée fidèlement au chargement.
-        #endregion 
+            /// <summary>
+            /// Sauvegarde la tournée <paramref name="t"/> (effectuée dans le graphe
+            /// identifié par <paramref name="graphId"/>) en base de données
+            /// et renvoie son identifiant.
+            /// </summary>
+            /// <param name="graphId">Identifiant BdD du graphe dans lequel la tournée a été calculée.</param>
+            /// <param name="t">La tournée à sauvegarder.</param>
+            /// <returns>Identifiant de la tournée en base de données (AUTO_INCREMENT).</returns>
+            /// // TODO : implémenter la sauvegarde de la tournée
+            //
+            // Ordre recommandé :
+            //   1. INSERT dans Tournee (cout_total, graphe_id) -> récupérer l'id
+            //   2. Pour chaque sommet de la séquence (avec son numéro d'ordre) :
+            //      INSERT dans EtapeTournee (tournee_id, numero_ordre, sommet_id)
+            //
+            // Attention : conserver l'ordre des étapes est essentiel pour
+            //             pouvoir reconstruire la tournée fidèlement au chargement.
+            #endregion
         public uint SaveTour(uint graphId, Tour t) //Tri + enregistrement Etapes
         {
             uint idTour;
@@ -280,7 +318,7 @@ namespace TourneeFutee
                 {
                     try
                     {
-                        List<Sommet> Ordre =Tour.Tri(t);
+                        List<Sommet> Ordre = Tour.Tri(t);
                         //Insertion de la Tournée
                         string query = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId,@cout);";
                         using (MySqlCommand cmdTour = new MySqlCommand(query, _connection)) //gère la commande SQL 
@@ -340,8 +378,61 @@ namespace TourneeFutee
             //   2. SELECT dans EtapeTournee JOIN Sommet WHERE tournee_id = @id
             //      ORDER BY numero_ordre -> reconstruire la séquence ordonnée de sommets
             //   3. Construire et retourner l'instance Tour
+            // throw new NotImplementedException("LoadTour non implémenté.");
 
-            throw new NotImplementedException("LoadTour non implémenté.");
+            if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                _connection.Open();
+            try
+            {
+                uint graphId;
+                float coutTotal;
+                string queryTournee = "SELECT * FROM Tournee WHERE id = @id;"; // Récupère les informations de la tournée (cout_total et graphe_id)
+                using (MySqlCommand cmdTournee = new MySqlCommand(queryTournee, _connection))
+                {
+                    cmdTournee.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader readerTournee = cmdTournee.ExecuteReader())
+                    {
+                        if (readerTournee.Read())
+                        {
+                            graphId = (uint)readerTournee["graphe_id"];
+                            coutTotal = (float)readerTournee["cout_total"];
+                        }
+                        else
+                        {
+                            throw new Exception("Tournée non trouvée");
+                        }
+                    }
+                }
+                List<Sommet> ordre = new List<Sommet>();
+                string queryEtapes = @"SELECT s.* FROM EtapeTournee et
+                                        JOIN Sommet s ON et.sommet_id = s.id
+                                        WHERE et.tournee_id = @id
+                                        ORDER BY et.numero_ordre;"; // Récupère les étapes de la tournée dans l'ordre
+                using (MySqlCommand cmdEtapes = new MySqlCommand(queryEtapes, _connection))
+                {
+                    cmdEtapes.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader readerEtapes = cmdEtapes.ExecuteReader())
+                    {
+                        while (readerEtapes.Read())
+                        {
+                            Sommet sommet = new Sommet
+                            {
+                                string nom = readerEtapes["nom"].ToString();
+                                float valeur = readerEtapes["valeur"] != DBNull.Value ? 0 : Convert.ToSingle(readerEtapes["valeur"]);
+                                Sommet s = new Sommet(nom, valeur);
+                                s.Id = (uint)readerEtapes["id"];
+                                ordre.Add(s);
+                            }
+                        }
+                    }
+                }
+                Tour tour = new Tour(ordre, coutTotal);
+                return tour;
+            }
+            finally
+            {
+                CloseConnection();
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────────
