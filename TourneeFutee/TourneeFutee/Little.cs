@@ -6,7 +6,7 @@
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
         Matrix matrice;
-        Graph graph;
+        Graph graphe;
         int nbSommets;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
@@ -17,8 +17,8 @@
         }
         public Graph Graph
         {
-            get { return graph; }
-            set { graph = value; }
+            get { return graphe; }
+            set { graphe = value; }
         }
         public int NbSommets
         {
@@ -30,7 +30,7 @@
             if (graph == null)
                 throw new ArgumentNullException(nameof(graph));
             this.matrice = graph.Matrice.Clone();
-            this.graph = graph;
+            this.graphe = graph;
             this.nbSommets = graph.Sommets.Count;
         }
 
@@ -47,7 +47,7 @@
             List<(string source, string destination)> segmentsChoisis = new List<(string source, string destination)>();
             List<string> villesSources = new List<string>();
             List<string> villesDestinations = new List<string>();
-            foreach (var sommet in this.graph.Sommets)
+            foreach (var sommet in this.graphe.Sommets)
             {
                 villesSources.Add(sommet.Nom);
                 villesDestinations.Add(sommet.Nom);
@@ -172,7 +172,7 @@
             float total = 0.0f;
             foreach (var segment in segments)
             {
-                total += this.graph.GetEdgeWeight(segment.source, segment.destination);
+                total += this.graphe.GetEdgeWeight(segment.source, segment.destination);
             }
             return total;
         }
