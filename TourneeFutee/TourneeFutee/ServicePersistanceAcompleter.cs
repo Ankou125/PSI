@@ -16,12 +16,12 @@ namespace TourneeFutee
         // ─────────────────────────────────────────────────────────────────────
         // Attributs privés
         // ─────────────────────────────────────────────────────────────────────
-        private readonly string _connectionString;
+        private readonly string connectionString;
         Dictionary<int, uint> sommetId;
         Dictionary<int, uint> etapId;
 
         // TODO : si vous avez besoin de maintenir une connexion ouverte,  ajoutez un attribut MySqlConnection ici.
-        private readonly MySqlConnection _connection;
+        private readonly MySqlConnection connection;
 
         // ─────────────────────────────────────────────────────────────────────
         // Constructeur
@@ -52,14 +52,14 @@ namespace TourneeFutee
         #endregion
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
-            this._connectionString = $"SERVER={serverIp};" +
+            this.connectionString = $"SERVER={serverIp};" +
                                          $"DATABASE={dbname};" +
                                          $"UID={user};PASSWORD={pwd};";
             try //test si la connexion fonctionne
             {
-                _connection = new MySqlConnection(this._connectionString);
-                _connection.Open();
-                if (_connection.State != ConnectionState.Open)
+                connection = new MySqlConnection(this.connectionString);
+                connection.Open();
+                if (connection.State != ConnectionState.Open)
                 {
                     throw new Exception("Connexion non ouverte");
                 }
@@ -71,9 +71,9 @@ namespace TourneeFutee
         }
         public void CloseConnection() //méthode pour fermer la connexion
         {
-            if (_connection != null && _connection.State == ConnectionState.Open)
+            if (connection != null && connection.State == ConnectionState.Open)
             {
-                _connection.Close();
+                connection.Close();
             }
         }
 
@@ -106,15 +106,15 @@ namespace TourneeFutee
             uint graphId;
             try
             {
-                if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
-                    _connection.Open();
-                using (var transaction = _connection.BeginTransaction())
+                if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                    connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
                         //Insertion du graph
                         string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
-                        using (MySqlCommand cmdGraph = new MySqlCommand(query, _connection)) //gère la commande SQL pour l'insertion du graph
+                        using (MySqlCommand cmdGraph = new MySqlCommand(query, connection)) //gère la commande SQL pour l'insertion du graph
                         {
                             cmdGraph.Transaction = transaction;
                             cmdGraph.Parameters.AddWithValue("@oriente", g.Directed); //remplace le praramètre SQL par la valeur de Directed
@@ -126,7 +126,7 @@ namespace TourneeFutee
                             string querySommet = @"     
                                         INSERT INTO Sommet (graphe_id, nom, valeur)
                                         VALUES (@graphe_id, @nom, @valeur);";
-                            using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, _connection)) //gère la commande SQL pour l'insertion des sommets
+                            using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, connection)) //gère la commande SQL pour l'insertion des sommets
                             {
                                 cmdSommet.Transaction = transaction;
                                 cmdSommet.Parameters.AddWithValue("@graphe_id", graphId);
@@ -149,7 +149,7 @@ namespace TourneeFutee
                                     {
                                         using (MySqlCommand cmdArc = new MySqlCommand(
                                          @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
-                                        VALUES (@gid, @src, @dst, @poids);", _connection))
+                                        VALUES (@gid, @src, @dst, @poids);", connection))
                                         {
                                             cmdArc.Transaction = transaction;
                                             cmdArc.Parameters.AddWithValue("@gid", graphId);
@@ -173,7 +173,7 @@ namespace TourneeFutee
                                     {
                                         using (MySqlCommand cmd = new MySqlCommand(
                                             @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
-                                        VALUES (@gid, @src, @dst, @poids);", _connection))
+                                        VALUES (@gid, @src, @dst, @poids);", connection))
                                         {
                                             cmd.Transaction = transaction;
                                             cmd.Parameters.AddWithValue("@gid", graphId);
@@ -211,22 +211,22 @@ namespace TourneeFutee
         #endregion 
         public Graph LoadGraph(uint id)
         {
-            if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
-                _connection.Open();
+            if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                connection.Open();
             try
             {
                 bool estOriente;
                 int nbSommets;
-                string requete = "SELECT est_oriente, nb_sommets FROM Graphe WHERE id = @id;"; // Récupère les informations du graphe (est_oriente)
-                using (MySqlCommand commandeGraphe = new MySqlCommand(requete, _connection))
+                string requete1 = "SELECT est_oriente, nb_sommets FROM Graphe WHERE id = @id;"; // Récupère les informations du graphe (est_oriente)
+                using (MySqlCommand command1 = new MySqlCommand(requete1, connection))
                 {
-                    commandeGraphe.Parameters.AddWithValue("@id", id);
-                    using (MySqlDataReader readerGraphe = commandeGraphe.ExecuteReader())
+                    command1.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader reader1 = command1.ExecuteReader())
                     {
-                        if (readerGraphe.Read())
+                        if (reader1.Read())
                         {
-                            estOriente = Convert.ToBoolean(readerGraphe["est_oriente"]);
-                            nbSommets = Convert.ToInt32(readerGraphe["nb_sommets"]);
+                            estOriente = Convert.ToBoolean(reader1["est_oriente"]);
+                            nbSommets = Convert.ToInt32(reader1["nb_sommets"]);
                         }
                         else
                         {
@@ -235,19 +235,19 @@ namespace TourneeFutee
                     }
                 }
                 Graph g = new Graph(estOriente);
-                Dictionary<uint, int> idSommetVersIndex = new Dictionary<uint, int>(); // Pour faire le lien entre les id des sommets en BdD et leurs indices dans la matrice
-                string requeteSommets = @"SELECT id, nom, valeur, indice_mat FROM Sommet WHERE graphe_id = @id ORDER BY indice_mat;" // Récupère les sommets du graphe
-                using (MySqlCommand cmdSommets = new MySqlCommand(requeteSommets, _connection))
+                Dictionary<uint, string> idSommetVersIndex = new Dictionary<uint, string>(); // Pour faire le lien entre les id des sommets en BdD et leurs indices dans la matrice
+                string requete2 = @"SELECT id, nom, valeur, indice_mat FROM Sommet WHERE graphe_id = @id ORDER BY indice_mat;"; // Récupère les sommets du graphe
+                using (MySqlCommand command2 = new MySqlCommand(requete2, connection))
                 {
-                    cmdSommets.Parameters.AddWithValue("@id", id);
-                    using (MySqlDataReader readerSommets = cmdSommets.ExecuteReader())
+                    command2.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader reader2 = command2.ExecuteReader())
                     {
                         int index = 0;
-                        while (readerSommets.Read())
+                        while (reader2.Read())
                         {
-                            uint idSommet = Convert.ToUInt32(readerSommets["id"]);
-                            string nom = readerSommets["nom"].ToString();
-                            float valeur = readerSommets["valeur"] == DBNull.Value ? 0 : Convert.ToSingle(readerSommets["valeur"]);
+                            uint idSommet = Convert.ToUInt32(reader2["id"]);
+                            string nom = reader2["nom"].ToString();
+                            float valeur = reader2["valeur"] == DBNull.Value ? 0 : Convert.ToSingle(reader2["valeur"]);
                             g.AddVertex(nom, valeur);
                             g.Sommets[g.Sommets.Count - 1].Id = idSommet; // Associe l'id du sommet en BdD à l'objet Sommet dans le graphe
                             idSommetVersIndex[idSommet] = nom;
@@ -258,24 +258,20 @@ namespace TourneeFutee
                 {
                     throw new Exception("Nombre de sommets récupérés ne correspond pas au nombre indiqué dans la table Graphe");
                 }
-                string requeteArcs = @"SELECT sommet_source, sommet_dest, poids FROM ArcWHERE graphe_id = @id;";// Récupère les arcs du graphe
-                using (MySqlCommand cmdArcs = new MySqlCommand(requeteArcs, _connection))
+                string requete3 = @"SELECT sommet_source, sommet_dest, poids FROM ArcWHERE graphe_id = @id;";// Récupère les arcs du graphe
+                using (MySqlCommand command3 = new MySqlCommand(requete3, connection))
                 {
-                    cmdArcs.Parameters.AddWithValue("@id", id);
-                    using (MySqlDataReader readerArcs = cmdArcs.ExecuteReader())
+                    command3.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader reader3 = command3.ExecuteReader())
                     {
-                        while (readerArcs.Read())
+                        while (reader3.Read())
                         {
-                            uint idSource = (uint)readerArcs["sommet_source"];
-                            uint idDest = (uint)readerArcs["sommet_dest"];
-                            float poids = Convert.ToSingle(readerArcs["poids"]);
-                            int indexSource = idSommetVersIndex[idSource];
-                            int indexDest = idSommetVersIndex[idDest];
-                            g.Matrice.Matrice[indexSource][indexDest] = poids;
-                            if (!estOriente)
-                            {
-                                g.Matrice.Matrice[indexDest][indexSource] = poids; // Si le graphe est non orienté, on remplit aussi la case symétrique
-                            }
+                            uint idSource = (uint)reader3["sommet_source"];
+                            uint idDest = (uint)reader3["sommet_dest"];
+                            float poids = Convert.ToSingle(reader3["poids"]);
+                            string indexSource = idSommetVersIndex[idSource];
+                            string indexDest = idSommetVersIndex[idDest];
+                            g.AddEdge(indexSource, indexDest, poids);
                         }
                     }
                 }
@@ -313,16 +309,16 @@ namespace TourneeFutee
                 throw new ArgumentNullException(nameof(t));
             try
             {
-                if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
-                    _connection.Open();
-                using (var transaction = _connection.BeginTransaction())
+                if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                    connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
                         List<Sommet> Ordre = Tour.Tri(t);
                         //Insertion de la Tournée
                         string query = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId,@cout);";
-                        using (MySqlCommand cmdTour = new MySqlCommand(query, _connection)) //gère la commande SQL 
+                        using (MySqlCommand cmdTour = new MySqlCommand(query, connection)) //gère la commande SQL 
                         {
                             cmdTour.Transaction = transaction;
                             cmdTour.Parameters.AddWithValue("@graphId", graphId); //remplace le praramètre SQL par l'id du graph
@@ -337,7 +333,7 @@ namespace TourneeFutee
                             string queryEtape = @"     
                             INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id)
                             VALUES (@tournee_id, @ordre, @sommet_id);";
-                            using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, _connection)) //gère la commande SQL pour l'insertion des sommets
+                            using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, connection)) //gère la commande SQL pour l'insertion des sommets
                             {
                                 cmdEtape.Transaction = transaction;
                                 cmdEtape.Parameters.AddWithValue("@tournee_id", idTour);
@@ -381,22 +377,22 @@ namespace TourneeFutee
             //   3. Construire et retourner l'instance Tour
             // throw new NotImplementedException("LoadTour non implémenté.");
 
-            if (_connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
-                _connection.Open();
+            if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                connection.Open();
             try
             {
                 uint graphId;
                 float coutTotal;
-                string queryTournee = "SELECT * FROM Tournee WHERE id = @id;"; // Récupère les informations de la tournée (cout_total et graphe_id)
-                using (MySqlCommand cmdTournee = new MySqlCommand(queryTournee, _connection))
+                string requete1 = "SELECT * FROM Tournee WHERE id = @id;"; // Récupère les informations de la tournée (cout_total et graphe_id)
+                using (MySqlCommand command1= new MySqlCommand(requete1, connection))
                 {
-                    cmdTournee.Parameters.AddWithValue("@id", id);
-                    using (MySqlDataReader readerTournee = cmdTournee.ExecuteReader())
+                    command1.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader reader1 = command1.ExecuteReader())
                     {
-                        if (readerTournee.Read())
+                        if (reader1.Read())
                         {
-                            graphId = (uint)readerTournee["graphe_id"];
-                            coutTotal = (float)readerTournee["cout_total"];
+                            graphId = (uint)reader1["graphe_id"];
+                            coutTotal = (float)reader1["cout_total"];
                         }
                         else
                         {
@@ -405,29 +401,33 @@ namespace TourneeFutee
                     }
                 }
                 List<Sommet> ordre = new List<Sommet>();
-                string queryEtapes = @"SELECT s.* FROM EtapeTournee et
-                                        JOIN Sommet s ON et.sommet_id = s.id
-                                        WHERE et.tournee_id = @id
-                                        ORDER BY et.numero_ordre;"; // Récupère les étapes de la tournée dans l'ordre
-                using (MySqlCommand cmdEtapes = new MySqlCommand(queryEtapes, _connection))
+                string requete2 = @"SELECT s.* FROM EtapeTournee et JOIN Sommet s ON et.sommet_id = s.id WHERE et.tournee_id = @id ORDER BY et.numero_ordre;"; // Récupère les étapes de la tournée dans l'ordre
+                using (MySqlCommand command2 = new MySqlCommand(requete2, connection))
                 {
-                    cmdEtapes.Parameters.AddWithValue("@id", id);
-                    using (MySqlDataReader readerEtapes = cmdEtapes.ExecuteReader())
+                    command2.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader reader2 = command2.ExecuteReader())
                     {
-                        while (readerEtapes.Read())
+                        while (reader2.Read())
                         {
-                            Sommet sommet = new Sommet(queryEtapes, coutTotal);
+                            Sommet sommet = new Sommet(requete2, coutTotal);
                             {
-                                string nom = readerEtapes["nom"].ToString();
-                                float valeur = readerEtapes["valeur"] != DBNull.Value ? 0 : Convert.ToSingle(readerEtapes["valeur"]);
+                                string nom = reader2["nom"].ToString();
+                                float valeur = reader2["valeur"] != DBNull.Value ? 0 : Convert.ToSingle(reader2["valeur"]);
                                 Sommet s = new Sommet(nom, valeur);
-                                s.Id = (uint)readerEtapes["id"];
+                                s.Id = (uint)reader2["id"];
                                 ordre.Add(s);
                             }
                         }
                     }
                 }
-                Tour tour = new Tour(ordre, coutTotal);
+                List<(string source, string destination)> parcours = new List<(string source, string destination)>();
+                for (int i = 0; i < ordre.Count; i++)
+                {
+                    string source = ordre[i].Nom;
+                    string destination = ordre[(i + 1) % ordre.Count].Nom;
+                    parcours.Add((source, destination));
+                }
+                Tour tour = new Tour(parcours, coutTotal);
                 return tour;
             }
             finally
@@ -446,7 +446,7 @@ namespace TourneeFutee
         /// </summary>
         private MySqlConnection OpenConnection()
         {
-            var conn = new MySqlConnection(_connectionString);
+            var conn = new MySqlConnection(connectionString);
             conn.Open();
             return conn;
         }

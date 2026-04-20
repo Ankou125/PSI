@@ -27,6 +27,19 @@
             this.nbSegments = parcour.Count;
             this.parcours = new List<(string source, string destination)>(parcour);
         }
+        public Tour(List<string> vertices, float cost)
+        {
+            this.cost = cost;
+            this.parcours = new List<(string source, string destination)>();
+            if (vertices != null && vertices.Count >= 2)
+            {
+                for (int i = 0; i < vertices.Count - 1; i++)
+                {
+                    this.parcours.Add((vertices[i], vertices[i + 1]));
+                }
+            }
+            this.nbSegments = this.parcours.Count;
+        }
 
         // propriétés
         public float Cost // Coût total de la tournée
@@ -39,10 +52,25 @@
             get { return parcours.Count;}
             // pas de set
         }
-        public List<(string source, string destination)> Parcour
+        public List<(string source, string destination)> Parcours
         {
             get { return parcours; }
             set { this.parcours = value; }
+        }
+        public IList<string> Vertices
+        {
+            get
+            {
+                List<string> result = new List<string>();
+                if (parcours == null || parcours.Count == 0)
+                    return result;
+                result.Add(parcours[0].source);
+                foreach (var segment in parcours)
+                {
+                    result.Add(segment.destination);
+                }
+                return result;
+            }
         }
 
         // Renvoie vrai si la tournée contient le trajet `source`->`destination`
