@@ -315,7 +315,20 @@ namespace TourneeFutee
                 {
                     try
                     {
-                        List<Sommet> Ordre = Tour.Tri(t);
+                        var nextMap = new Dictionary<string, string>();
+                        foreach (var (source, destination) in t.Parcours)
+                        {
+                            nextMap[source] = destination;
+                        }
+                        string start = t.Parcours[0].source;
+                        string current = start;
+
+                        List<Sommet> Ordre = new List<Sommet>();
+                        do
+                        {
+                            Ordre.Add(t.Sommets[t.NomSommets[current]]);
+                            current = nextMap[current];
+                        } while (current != start);
                         //Insertion de la Tournée
                         string query = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId,@cout);";
                         using (MySqlCommand cmdTour = new MySqlCommand(query, connection)) //gère la commande SQL 

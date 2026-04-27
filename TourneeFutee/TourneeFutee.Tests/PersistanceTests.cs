@@ -24,9 +24,9 @@ namespace TourneeFutee.Tests
         // Adaptez ces constantes à votre environnement.
         // ─────────────────────────────────────────────────────────────────────
         private const string DB_SERVER = "127.0.0.1";
-        private const string DB_NAME   = "tourneefutee_test";   // base dédiée aux tests !
-        private const string DB_USER   = "root";
-        private const string DB_PWD    = "root";
+        private const string DB_NAME   = "TourneeFutee2";   // base dédiée aux tests !
+        private const string DB_USER   = "test";
+        private const string DB_PWD    = "motdepasse";
 
         // ─────────────────────────────────────────────────────────────────────
         // Instance partagée du service (créée une seule fois par classe de test)

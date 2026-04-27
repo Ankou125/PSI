@@ -7,12 +7,16 @@
         float cost;
         int nbSegments;
         List<(string source, string destination)> parcours;
+        List<Sommet> sommets;
+        Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice dans la liste de sommets
 
         public Tour ()
         {
             this.cost = 0;
             this.nbSegments = 0;
             this.parcours = new List<(string source, string destination)>();
+            this.sommets=new List<Sommet> ();
+            this.nomSommets=new Dictionary<string, int> ();
         }
         
         public Tour(float cost, int nbSegments)
@@ -20,12 +24,16 @@
             this.cost = cost;
             this.nbSegments = nbSegments;
             this.parcours = new List<(string source, string destination)>();
+            this.sommets = new List<Sommet>();
+            this.nomSommets = new Dictionary<string, int>();
         }
         public Tour(List<(string source, string destination)> parcour, float cost)
         {
             this.cost = cost;
             this.nbSegments = parcour.Count;
             this.parcours = new List<(string source, string destination)>(parcour);
+            this.sommets = new List<Sommet>();
+            this.nomSommets = new Dictionary<string, int>();
         }
         public Tour(List<string> vertices, float cost)
         {
@@ -39,6 +47,8 @@
                 }
             }
             this.nbSegments = this.parcours.Count;
+            this.sommets = new List<Sommet>();
+            this.nomSommets = new Dictionary<string, int>();
         }
 
         // propriétés
@@ -56,6 +66,16 @@
         {
             get { return parcours; }
             set { this.parcours = value; }
+        }
+        public List<Sommet> Sommets
+        {
+            get{ return sommets; }
+            set { sommets = value; }
+        }
+        public Dictionary<string, int> NomSommets
+        {
+            get { return nomSommets;}
+            set { nomSommets = value; }
         }
         public IList<string> Vertices
         {
@@ -98,29 +118,6 @@
             {
                 Console.WriteLine(segment.source+" --> "+segment.destination);
             }
-        }
-
-        static public List<Sommet> Tri(Tour t) //Tri une liste de segment et en ressort la liste des sommets dans l'ordre de parcours
-        {
-            var result = new List<Sommet>();
-            if (t == null || t.parcours == null || t.parcours.Count == 0)
-                return result;
-            var nextMap = new Dictionary<string, string>(); // dictionnaire pour accéder rapidement au segment suivant
-            foreach (var (source, destination) in t.parcours)
-            {
-                nextMap[source] = destination;
-            }
-            var start = t.parcours[0].source;  //On commence avec le premier segment
-            var current = start;
-            do
-            {
-                result.Add(new Sommet(current));
-                if (!nextMap.ContainsKey(current))
-                    throw new Exception("Cycle invalide");
-                current = nextMap[current];
-
-            } while (current != start);
-            return result;
         }
     }
 }
