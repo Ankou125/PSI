@@ -8,7 +8,6 @@
         private int nbSegments;
         private List<(string source, string destination)> parcours;
         private List<Sommet> sommets;
-        private Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice dans la liste de sommets
 
         public Tour ()
         {
@@ -16,7 +15,6 @@
             this.nbSegments = 0;
             this.parcours = new List<(string source, string destination)>();
             this.sommets=new List<Sommet> ();
-            this.nomSommets=new Dictionary<string, int> ();
         }
         
         public Tour(float cost, int nbSegments)
@@ -25,7 +23,6 @@
             this.nbSegments = nbSegments;
             this.parcours = new List<(string source, string destination)>();
             this.sommets = new List<Sommet>();
-            this.nomSommets = new Dictionary<string, int>();
         }
         public Tour(List<(string source, string destination)> parcour, float cost)
         {
@@ -33,7 +30,6 @@
             this.nbSegments = parcour.Count;
             this.parcours = new List<(string source, string destination)>(parcour);
             this.sommets = new List<Sommet>();
-            this.nomSommets = new Dictionary<string, int>();
         }
         public Tour(List<string> vertices, float cost)
         {
@@ -48,7 +44,6 @@
             }
             this.nbSegments = this.parcours.Count;
             this.sommets = new List<Sommet>();
-            this.nomSommets = new Dictionary<string, int>();
         }
         public Tour(List<(string source, string destination)> parcour, float cost, List<Sommet> sommets)
         {
@@ -56,9 +51,6 @@
             this.parcours = new List<(string source, string destination)>(parcour);
             this.nbSegments = parcour.Count;
             this.sommets = sommets;
-            this.nomSommets = sommets
-                .Select((s, i) => new { s.Nom, i })
-                .ToDictionary(x => x.Nom, x => x.i);
         }
 
         // propriétés
@@ -81,11 +73,6 @@
         {
             get{ return sommets; }
             set { sommets = value; }
-        }
-        public Dictionary<string, int> NomSommets
-        {
-            get { return nomSommets;}
-            set { nomSommets = value; }
         }
         public IList<string> Vertices
         {
