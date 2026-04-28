@@ -41,7 +41,7 @@ CREATE TABLE Graphe (
 CREATE TABLE Sommet (
     id          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
     graphe_id   INT UNSIGNED    NOT NULL,
-    nom         VARCHAR(50)     unique NOT NULL,               -- nom/label du sommet (ex : "A", "Paris")
+    nom         VARCHAR(50)     NOT NULL,               -- nom/label du sommet (ex : "A", "Paris")
     valeur      FLOAT           NULL,                   -- valeur associée au sommet (peut être NULL)
     indice_mat	INT UNSIGNED	NOT NULL,
 
@@ -50,6 +50,8 @@ CREATE TABLE Sommet (
 
     PRIMARY KEY (id),
     UNIQUE KEY uk_sommet_indice (graphe_id, indice_mat),
+    UNIQUE KEY uk_sommet_nom (graphe_id, nom), -- contrainte d'unicite du nom par graphe
+    
     FOREIGN KEY (graphe_id) REFERENCES Graphe(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
