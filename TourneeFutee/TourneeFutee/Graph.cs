@@ -35,6 +35,7 @@
         {
             get { return this.directed; }
         }
+
         //Dictionnaire des noms
         public Dictionary<string, int> NomSommets
         {
@@ -50,6 +51,11 @@
         {
             get { return this.sommets; }
             set { this.sommets = value; }
+        }
+
+        public bool ContainsVertex(string name)
+        {
+            return nomSommets.ContainsKey(name);
         }
 
         // --- Gestion des sommets ---
