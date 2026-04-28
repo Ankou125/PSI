@@ -260,7 +260,7 @@ namespace TourneeFutee
                 {
                     throw new Exception("Nombre de sommets récupérés ne correspond pas au nombre indiqué dans la table Graphe");
                 }
-                string requete3 = @"SELECT sommet_source, sommet_dest, poids FROM ArcWHERE graphe_id = @id;";// Récupère les arcs du graphe
+                string requete3 = @"SELECT sommet_source, sommet_dest, poids FROM Arc WHERE graphe_id = @id;";// Récupère les arcs du graphe
                 using (MySqlCommand command3 = new MySqlCommand(requete3, connection))
                 {
                     command3.Parameters.AddWithValue("@id", id);
