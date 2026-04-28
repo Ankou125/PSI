@@ -123,17 +123,17 @@ namespace TourneeFutee
                             graphId = (uint)cmdGraph.LastInsertedId;
                         }
                         //Insertion des Sommets
-                        foreach (var sommet in g.Sommets)
+                        for (int j = 0; j < g.Sommets.Count; j++)
                         {
-                            string querySommet = @"     
-                                        INSERT INTO Sommet (graphe_id, nom, valeur)
-                                        VALUES (@graphe_id, @nom, @valeur);";
+                            var sommet = g.Sommets[j];
+                            string querySommet = @"INSERT INTO Sommet (graphe_id, nom, valeur, indice_mat) VALUES (@graphe_id, @nom, @valeur, @indice);";
                             using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, connection)) //gère la commande SQL pour l'insertion des sommets
                             {
                                 cmdSommet.Transaction = transaction;
                                 cmdSommet.Parameters.AddWithValue("@graphe_id", graphId);
                                 cmdSommet.Parameters.AddWithValue("@nom", sommet.Nom);
                                 cmdSommet.Parameters.AddWithValue("@valeur", sommet.Valeur);
+                                cmdSommet.Parameters.AddWithValue("@indice", j);
                                 cmdSommet.ExecuteNonQuery();
                                 sommet.Id = (uint)cmdSommet.LastInsertedId;
                             }

@@ -24,8 +24,8 @@ DROP TABLE IF EXISTS Graphe;
 -- =============================================================================
 CREATE TABLE Graphe (
     id           INT UNSIGNED    NOT NULL AUTO_INCREMENT,
-    est_oriente  TINYINT(1)      NOT NULL DEFAULT 0,   -- 0 = non orienté, 1 = orienté
-	nb_sommets   INT UNSIGNED NOT NULL,
+    est_oriente  TINYINT(1)		 NOT NULL DEFAULT 0,   -- 0 = non orienté, 1 = orienté
+	nb_sommets   INT UNSIGNED 	 NOT NULL,
 
     -- TODO : ajouter d'autres colonnes si nécessaire
     --        (ex : nom du graphe, nombre de sommets pour validation, ...)
