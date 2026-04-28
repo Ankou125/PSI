@@ -4,11 +4,11 @@
     public class Tour
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-        float cost;
-        int nbSegments;
-        List<(string source, string destination)> parcours;
-        List<Sommet> sommets;
-        Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice dans la liste de sommets
+        private float cost;
+        private int nbSegments;
+        private List<(string source, string destination)> parcours;
+        private List<Sommet> sommets;
+        private Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice dans la liste de sommets
 
         public Tour ()
         {

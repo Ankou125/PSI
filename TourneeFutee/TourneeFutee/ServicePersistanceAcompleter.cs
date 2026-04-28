@@ -17,8 +17,8 @@ namespace TourneeFutee
         // Attributs privés
         // ─────────────────────────────────────────────────────────────────────
         private readonly string connectionString;
-        Dictionary<int, uint> sommetId;
-        Dictionary<int, uint> etapId;
+        private Dictionary<int, uint> sommetId;
+        private Dictionary<int, uint> etapId;
 
         // TODO : si vous avez besoin de maintenir une connexion ouverte,  ajoutez un attribut MySqlConnection ici.
         private readonly MySqlConnection connection;
