@@ -58,9 +58,7 @@
             Search(m, segmentsChoisis, villesSources, villesDestinations, borneInitiale, ref meilleurCout, ref meilleursSegments);
             if (meilleursSegments.Count == 0)
                 return new Tour();
-
-            var t = new Tour(meilleursSegments, meilleurCout, this.graphe.Sommets);
-            return t;
+            return new Tour(meilleursSegments, meilleurCout); ;
         }
         private void Search(Matrix m, List<(string source, string destination)> segmentsChoisis, List<string> villesSources, List<string> villesDestinations, float borneCourante, ref float meilleurCout, ref List<(string source, string destination)> meilleursSegments)
         {

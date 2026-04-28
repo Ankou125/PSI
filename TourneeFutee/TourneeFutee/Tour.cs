@@ -7,14 +7,12 @@
         private float cost;
         private int nbSegments;
         private List<(string source, string destination)> parcours;
-        private List<Sommet> sommets;
 
         public Tour ()
         {
             this.cost = 0;
             this.nbSegments = 0;
             this.parcours = new List<(string source, string destination)>();
-            this.sommets=new List<Sommet> ();
         }
         
         public Tour(float cost, int nbSegments)
@@ -22,14 +20,12 @@
             this.cost = cost;
             this.nbSegments = nbSegments;
             this.parcours = new List<(string source, string destination)>();
-            this.sommets = new List<Sommet>();
         }
         public Tour(List<(string source, string destination)> parcour, float cost)
         {
             this.cost = cost;
             this.nbSegments = parcour.Count;
             this.parcours = new List<(string source, string destination)>(parcour);
-            this.sommets = new List<Sommet>();
         }
         public Tour(List<string> vertices, float cost)
         {
@@ -43,14 +39,6 @@
                 }
             }
             this.nbSegments = this.parcours.Count;
-            this.sommets = new List<Sommet>();
-        }
-        public Tour(List<(string source, string destination)> parcour, float cost, List<Sommet> sommets)
-        {
-            this.cost = cost;
-            this.parcours = new List<(string source, string destination)>(parcour);
-            this.nbSegments = parcour.Count;
-            this.sommets = sommets;
         }
 
         // propriétés
@@ -68,11 +56,6 @@
         {
             get { return parcours; }
             set { this.parcours = value; }
-        }
-        public List<Sommet> Sommets
-        {
-            get{ return sommets; }
-            set { sommets = value; }
         }
         public IList<string> Vertices
         {

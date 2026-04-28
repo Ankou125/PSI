@@ -309,7 +309,6 @@ namespace TourneeFutee
             uint idTour;
             if (t == null)
                 throw new ArgumentNullException(nameof(t));
-
             try
             {
                 if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
