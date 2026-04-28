@@ -309,6 +309,17 @@ namespace TourneeFutee
             uint idTour;
             if (t == null)
                 throw new ArgumentNullException(nameof(t));
+
+            var noms = new HashSet<string>();
+            foreach (var (s, d) in t.Parcours)
+            {
+                noms.Add(s);
+                noms.Add(d);
+            }
+            t.NomSommets = noms
+                .Select((nom, i) => new { nom, i })
+                .ToDictionary(x => x.nom, x => x.i);
+
             try
             {
                 if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
@@ -324,7 +335,6 @@ namespace TourneeFutee
                         }
                         string start = t.Parcours[0].source;
                         string current = start;
-
                         List<Sommet> Ordre = new List<Sommet>();
                         do
                         {
