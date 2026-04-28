@@ -52,9 +52,7 @@ namespace TourneeFutee
         #endregion
         public ServicePersistance(string serverIp, string dbname, string user, string pwd)
         {
-            this.connectionString = $"SERVER={serverIp};" +
-                                         $"DATABASE={dbname};" +
-                                         $"UID={user};PASSWORD={pwd};";
+            this.connectionString = $"SERVER={serverIp};" + $"DATABASE={dbname};" + $"UID={user};PASSWORD={pwd};";
             try //test si la connexion fonctionne
             {
                 connection = new MySqlConnection(this.connectionString);
@@ -149,9 +147,7 @@ namespace TourneeFutee
                                     float poids = g.Matrice.Matrice[i][j];
                                     if (Math.Abs(poids - g.Matrice.DefaultValue) > 0.0001f) //Moins risqué pour les float
                                     {
-                                        using (MySqlCommand cmdArc = new MySqlCommand(
-                                         @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
-                                        VALUES (@gid, @src, @dst, @poids);", connection))
+                                        using (MySqlCommand cmdArc = new MySqlCommand(@"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids) VALUES (@gid, @src, @dst, @poids);", connection))
                                         {
                                             cmdArc.Transaction = transaction;
                                             cmdArc.Parameters.AddWithValue("@gid", graphId);
@@ -173,9 +169,7 @@ namespace TourneeFutee
                                     float poids = g.Matrice.Matrice[i][j];
                                     if (Math.Abs(poids - g.Matrice.DefaultValue) > 0.0001f)
                                     {
-                                        using (MySqlCommand cmd = new MySqlCommand(
-                                            @"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids)
-                                        VALUES (@gid, @src, @dst, @poids);", connection))
+                                        using (MySqlCommand cmd = new MySqlCommand(@"INSERT INTO Arc (graphe_id, sommet_source, sommet_dest, poids) VALUES (@gid, @src, @dst, @poids);", connection))
                                         {
                                             cmd.Transaction = transaction;
                                             cmd.Parameters.AddWithValue("@gid", graphId);
@@ -330,27 +324,18 @@ namespace TourneeFutee
                         for (int i = 0; i < vertices.Count; i++)
                         {
                             uint sommetId;
-
-                            string querySommet = @"
-                        SELECT id
-                        FROM Sommet
-                        WHERE graphe_id = @graphId AND nom = @nom
-                        LIMIT 1;";
+                            string querySommet = @"SELECT id FROM Sommet WHERE graphe_id = @graphId AND nom = @nom LIMIT 1;";
                             using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, connection))
                             {
                                 cmdSommet.Transaction = transaction;
                                 cmdSommet.Parameters.AddWithValue("@graphId", graphId);
                                 cmdSommet.Parameters.AddWithValue("@nom", vertices[i]);
-
                                 object result = cmdSommet.ExecuteScalar();
                                 if (result == null)
                                     throw new Exception("Sommet introuvable : " + vertices[i]);
-
                                 sommetId = Convert.ToUInt32(result);
                             }
-                            string queryEtape = @"
-                        INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id)
-                        VALUES (@tournee_id, @ordre, @sommet_id);";
+                            string queryEtape = @"INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id) VALUES (@tournee_id, @ordre, @sommet_id);";
                             using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, connection))
                             {
                                 cmdEtape.Transaction = transaction;
@@ -388,16 +373,13 @@ namespace TourneeFutee
         {
             if (connection.State != ConnectionState.Open)
                 connection.Open();
-
             try
             {
                 float coutTotal;
-
                 string requete1 = "SELECT cout_total FROM Tournee WHERE id = @id;";
                 using (MySqlCommand command1 = new MySqlCommand(requete1, connection))
                 {
                     command1.Parameters.AddWithValue("@id", id);
-
                     using (MySqlDataReader reader1 = command1.ExecuteReader())
                     {
                         if (reader1.Read())
@@ -410,20 +392,11 @@ namespace TourneeFutee
                         }
                     }
                 }
-
                 List<string> vertices = new List<string>();
-
-                string requete2 = @"
-            SELECT s.nom
-            FROM EtapeTournee et
-            JOIN Sommet s ON et.sommet_id = s.id
-            WHERE et.tournee_id = @id
-            ORDER BY et.numero_ordre;";
-
+                string requete2 = @"SELECT s.nom FROM EtapeTournee et JOIN Sommet s ON et.sommet_id = s.id WHERE et.tournee_id = @id ORDER BY et.numero_ordre;";
                 using (MySqlCommand command2 = new MySqlCommand(requete2, connection))
                 {
                     command2.Parameters.AddWithValue("@id", id);
-
                     using (MySqlDataReader reader2 = command2.ExecuteReader())
                     {
                         while (reader2.Read())
@@ -432,7 +405,6 @@ namespace TourneeFutee
                         }
                     }
                 }
-
                 return new Tour(vertices, coutTotal);
             }
             finally
