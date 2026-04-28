@@ -304,67 +304,70 @@ namespace TourneeFutee
             // Attention : conserver l'ordre des étapes est essentiel pour
             //             pouvoir reconstruire la tournée fidèlement au chargement.
             #endregion
-        public uint SaveTour(uint graphId, Tour t) //Tri + enregistrement Etapes
+        public uint SaveTour(uint graphId, Tour t)
         {
             uint idTour;
             if (t == null)
                 throw new ArgumentNullException(nameof(t));
             try
             {
-                if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+                if (connection.State != ConnectionState.Open)
                     connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        var nextMap = new Dictionary<string, string>();
-                        foreach (var (source, destination) in t.Parcours)
-                        {
-                            nextMap[source] = destination;
-                        }
-                        string start = t.Parcours[0].source;
-                        string current = start;
-                        List<Sommet> Ordre = new List<Sommet>();
-                        do
-                        {
-                            Ordre.Add(t.Sommets.First(s => s.Nom == current));
-                            current = nextMap[current];
-                        } while (current != start);
-                        //Insertion de la Tournée
-                        string query = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId,@cout);";
-                        using (MySqlCommand cmdTour = new MySqlCommand(query, connection)) //gère la commande SQL 
+                        string queryTour = "INSERT INTO Tournee (graphe_id, cout_total) VALUES (@graphId, @cout);";
+                        using (MySqlCommand cmdTour = new MySqlCommand(queryTour, connection))
                         {
                             cmdTour.Transaction = transaction;
-                            cmdTour.Parameters.AddWithValue("@graphId", graphId); //remplace le praramètre SQL par l'id du graph
-                            cmdTour.Parameters.AddWithValue("@cout", t.Cost); //remplace le praramètre SQL par la valeur de cost
+                            cmdTour.Parameters.AddWithValue("@graphId", graphId);
+                            cmdTour.Parameters.AddWithValue("@cout", t.Cost);
                             cmdTour.ExecuteNonQuery();
-                            idTour = (uint)cmdTour.LastInsertedId; //Récupère l'id de la tournée enregistrée
+                            idTour = (uint)cmdTour.LastInsertedId;
                         }
-                        //Insertion Etapes de la tournée
-                        int i = 0;
-                        while (i < Ordre.Count)
+                        IList<string> vertices = t.Vertices;
+                        for (int i = 0; i < vertices.Count; i++)
                         {
-                            string queryEtape = @"     
-                            INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id)
-                            VALUES (@tournee_id, @ordre, @sommet_id);";
-                            using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, connection)) //gère la commande SQL pour l'insertion des sommets
+                            uint sommetId;
+
+                            string querySommet = @"
+                        SELECT id
+                        FROM Sommet
+                        WHERE graphe_id = @graphId AND nom = @nom
+                        LIMIT 1;";
+                            using (MySqlCommand cmdSommet = new MySqlCommand(querySommet, connection))
+                            {
+                                cmdSommet.Transaction = transaction;
+                                cmdSommet.Parameters.AddWithValue("@graphId", graphId);
+                                cmdSommet.Parameters.AddWithValue("@nom", vertices[i]);
+
+                                object result = cmdSommet.ExecuteScalar();
+                                if (result == null)
+                                    throw new Exception("Sommet introuvable : " + vertices[i]);
+
+                                sommetId = Convert.ToUInt32(result);
+                            }
+                            string queryEtape = @"
+                        INSERT INTO EtapeTournee (tournee_id, numero_ordre, sommet_id)
+                        VALUES (@tournee_id, @ordre, @sommet_id);";
+                            using (MySqlCommand cmdEtape = new MySqlCommand(queryEtape, connection))
                             {
                                 cmdEtape.Transaction = transaction;
                                 cmdEtape.Parameters.AddWithValue("@tournee_id", idTour);
                                 cmdEtape.Parameters.AddWithValue("@ordre", i);
-                                cmdEtape.Parameters.AddWithValue("@sommet_id", Ordre[i].Id);
+                                cmdEtape.Parameters.AddWithValue("@sommet_id", sommetId);
                                 cmdEtape.ExecuteNonQuery();
                             }
-                            i++;
                         }
                         transaction.Commit();
+                        return idTour;
                     }
                     catch
                     {
                         transaction.Rollback();
                         throw;
                     }
-                    return idTour;
                 }
             }
             finally
