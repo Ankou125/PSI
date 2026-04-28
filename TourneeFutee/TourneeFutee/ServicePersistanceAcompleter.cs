@@ -113,14 +113,16 @@ namespace TourneeFutee
                     try
                     {
                         //Insertion du graph
-                        string query = "INSERT INTO Graphe (est_oriente) VALUES (@oriente);";
+                        string query = "INSERT INTO Graphe (est_oriente,nb_sommets) VALUES (@oriente, @nb_sommets);";
                         using (MySqlCommand cmdGraph = new MySqlCommand(query, connection)) //gère la commande SQL pour l'insertion du graph
                         {
                             cmdGraph.Transaction = transaction;
                             cmdGraph.Parameters.AddWithValue("@oriente", g.Directed); //remplace le praramètre SQL par la valeur de Directed
+                            cmdGraph.Parameters.AddWithValue("@nb_sommets", g.Sommets.Count);
                             cmdGraph.ExecuteNonQuery();
                             graphId = (uint)cmdGraph.LastInsertedId;
                         }
+                        //Insertion des Sommets
                         foreach (var sommet in g.Sommets)
                         {
                             string querySommet = @"     
