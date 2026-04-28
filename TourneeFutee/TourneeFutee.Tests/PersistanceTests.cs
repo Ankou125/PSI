@@ -24,9 +24,9 @@ namespace TourneeFutee.Tests
         // Adaptez ces constantes à votre environnement.
         // ─────────────────────────────────────────────────────────────────────
         private const string DB_SERVER = "127.0.0.1";
-        private const string DB_NAME   = "TourneeFutee2";   // base dédiée aux tests !
-        private const string DB_USER   = "test";
-        private const string DB_PWD    = "motdepasse";
+        private const string DB_NAME = "TourneeFutee2";   // base dédiée aux tests !
+        private const string DB_USER = "test";
+        private const string DB_PWD = "motdepasse";
 
         // ─────────────────────────────────────────────────────────────────────
         // Instance partagée du service (créée une seule fois par classe de test)
@@ -70,23 +70,23 @@ namespace TourneeFutee.Tests
             g.AddVertex("E", 0f);
             g.AddVertex("F", 0f);
 
-            g.AddEdge("A", "B",  1f); g.AddEdge("A", "C",  7f);
-            g.AddEdge("A", "D",  3f); g.AddEdge("A", "E", 14f); g.AddEdge("A", "F",  2f);
+            g.AddEdge("A", "B", 1f); g.AddEdge("A", "C", 7f);
+            g.AddEdge("A", "D", 3f); g.AddEdge("A", "E", 14f); g.AddEdge("A", "F", 2f);
 
-            g.AddEdge("B", "A",  3f); g.AddEdge("B", "C",  6f);
-            g.AddEdge("B", "D",  9f); g.AddEdge("B", "E",  1f); g.AddEdge("B", "F", 24f);
+            g.AddEdge("B", "A", 3f); g.AddEdge("B", "C", 6f);
+            g.AddEdge("B", "D", 9f); g.AddEdge("B", "E", 1f); g.AddEdge("B", "F", 24f);
 
-            g.AddEdge("C", "A",  6f); g.AddEdge("C", "B", 14f);
-            g.AddEdge("C", "D",  3f); g.AddEdge("C", "E",  7f); g.AddEdge("C", "F",  3f);
+            g.AddEdge("C", "A", 6f); g.AddEdge("C", "B", 14f);
+            g.AddEdge("C", "D", 3f); g.AddEdge("C", "E", 7f); g.AddEdge("C", "F", 3f);
 
-            g.AddEdge("D", "A",  2f); g.AddEdge("D", "B",  3f);
-            g.AddEdge("D", "C",  5f); g.AddEdge("D", "E",  9f); g.AddEdge("D", "F", 11f);
+            g.AddEdge("D", "A", 2f); g.AddEdge("D", "B", 3f);
+            g.AddEdge("D", "C", 5f); g.AddEdge("D", "E", 9f); g.AddEdge("D", "F", 11f);
 
-            g.AddEdge("E", "A", 15f); g.AddEdge("E", "B",  7f);
-            g.AddEdge("E", "C", 11f); g.AddEdge("E", "D",  2f); g.AddEdge("E", "F",  4f);
+            g.AddEdge("E", "A", 15f); g.AddEdge("E", "B", 7f);
+            g.AddEdge("E", "C", 11f); g.AddEdge("E", "D", 2f); g.AddEdge("E", "F", 4f);
 
-            g.AddEdge("F", "A", 20f); g.AddEdge("F", "B",  5f);
-            g.AddEdge("F", "C", 13f); g.AddEdge("F", "D",  4f); g.AddEdge("F", "E", 18f);
+            g.AddEdge("F", "A", 20f); g.AddEdge("F", "B", 5f);
+            g.AddEdge("F", "C", 13f); g.AddEdge("F", "D", 4f); g.AddEdge("F", "E", 18f);
 
             return g;
         }
@@ -196,10 +196,10 @@ namespace TourneeFutee.Tests
             Assert.AreEqual(original.Order, loaded.Order,
                 "Nombre de sommets différent après rechargement.");
 
-            Assert.AreEqual(1f,  loaded.GetEdgeWeight("A", "B"), 0.001f, "Poids A->B incorrect.");
-            Assert.AreEqual(3f,  loaded.GetEdgeWeight("B", "A"), 0.001f, "Poids B->A incorrect.");
+            Assert.AreEqual(1f, loaded.GetEdgeWeight("A", "B"), 0.001f, "Poids A->B incorrect.");
+            Assert.AreEqual(3f, loaded.GetEdgeWeight("B", "A"), 0.001f, "Poids B->A incorrect.");
             Assert.AreEqual(20f, loaded.GetEdgeWeight("F", "A"), 0.001f, "Poids F->A incorrect.");
-            Assert.AreEqual(4f,  loaded.GetEdgeWeight("E", "D"), 0.001f, "Poids E->D incorrect.");
+            Assert.AreEqual(4f, loaded.GetEdgeWeight("E", "D"), 0.001f, "Poids E->D incorrect.");
 
             // FIX : IsOriented -> Directed
             Assert.IsTrue(loaded.Directed,
