@@ -59,11 +59,7 @@
             if (meilleursSegments.Count == 0)
                 return new Tour();
 
-            Tour t=new Tour(meilleursSegments, meilleurCout);
-            t.Sommets = Graph.Sommets;
-            t.NomSommets = Graph.Sommets
-                .Select((s, i) => new { s.Nom, i })
-                .ToDictionary(x => x.Nom, x => x.i);
+            var t = new Tour(meilleursSegments, meilleurCout, this.graphe.Sommets);
             return t;
         }
         private void Search(Matrix m, List<(string source, string destination)> segmentsChoisis, List<string> villesSources, List<string> villesDestinations, float borneCourante, ref float meilleurCout, ref List<(string source, string destination)> meilleursSegments)

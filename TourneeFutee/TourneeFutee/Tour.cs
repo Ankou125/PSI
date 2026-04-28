@@ -50,6 +50,16 @@
             this.sommets = new List<Sommet>();
             this.nomSommets = new Dictionary<string, int>();
         }
+        public Tour(List<(string source, string destination)> parcour, float cost, List<Sommet> sommets)
+        {
+            this.cost = cost;
+            this.parcours = new List<(string source, string destination)>(parcour);
+            this.nbSegments = parcour.Count;
+            this.sommets = sommets;
+            this.nomSommets = sommets
+                .Select((s, i) => new { s.Nom, i })
+                .ToDictionary(x => x.Nom, x => x.i);
+        }
 
         // propriétés
         public float Cost // Coût total de la tournée

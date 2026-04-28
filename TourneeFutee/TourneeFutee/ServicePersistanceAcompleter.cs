@@ -320,6 +320,25 @@ namespace TourneeFutee
                 .Select((nom, i) => new { nom, i })
                 .ToDictionary(x => x.nom, x => x.i);
 
+            var nom = new HashSet<string>();
+
+            foreach (var (source, destination) in t.Parcours)
+            {
+                nom.Add(source);
+                nom.Add(destination);
+            }
+
+            // Remplir Sommets si vide
+            if (t.Sommets == null || t.Sommets.Count == 0)
+            {
+                t.Sommets = nom.Select(n => new Sommet(n)).ToList();
+            }
+
+            // Recréer le dictionnaire
+            t.NomSommets = t.Sommets
+                .Select((s, i) => new { s.Nom, i })
+                .ToDictionary(x => x.Nom, x => x.i);
+
             try
             {
                 if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
@@ -338,7 +357,7 @@ namespace TourneeFutee
                         List<Sommet> Ordre = new List<Sommet>();
                         do
                         {
-                            Ordre.Add(t.Sommets[t.NomSommets[current]]);
+                            Ordre.Add(t.Sommets.First(s => s.Nom == current));
                             current = nextMap[current];
                         } while (current != start);
                         //Insertion de la Tournée
