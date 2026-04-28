@@ -310,35 +310,6 @@ namespace TourneeFutee
             if (t == null)
                 throw new ArgumentNullException(nameof(t));
 
-            var noms = new HashSet<string>();
-            foreach (var (s, d) in t.Parcours)
-            {
-                noms.Add(s);
-                noms.Add(d);
-            }
-            t.NomSommets = noms
-                .Select((nom, i) => new { nom, i })
-                .ToDictionary(x => x.nom, x => x.i);
-
-            var nom = new HashSet<string>();
-
-            foreach (var (source, destination) in t.Parcours)
-            {
-                nom.Add(source);
-                nom.Add(destination);
-            }
-
-            // Remplir Sommets si vide
-            if (t.Sommets == null || t.Sommets.Count == 0)
-            {
-                t.Sommets = nom.Select(n => new Sommet(n)).ToList();
-            }
-
-            // Recréer le dictionnaire
-            t.NomSommets = t.Sommets
-                .Select((s, i) => new { s.Nom, i })
-                .ToDictionary(x => x.Nom, x => x.i);
-
             try
             {
                 if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
