@@ -101,6 +101,7 @@ CREATE TABLE Tournee (
 CREATE TABLE EtapeTournee (
     tournee_id      INT UNSIGNED    NOT NULL,
     numero_ordre    INT UNSIGNED    NOT NULL,            -- position dans la séquence (commence à 0 ou 1)
+    nb_sommets   INT UNSIGNED NOT NULL,
     sommet_id       INT UNSIGNED    NOT NULL,
 
     -- TODO : ajouter d'autres colonnes si nécessaire

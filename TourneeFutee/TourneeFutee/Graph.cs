@@ -5,11 +5,11 @@
 
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
 
-        int order;
-        bool directed;
-        Matrix matrice;
-        Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice
-        List<Sommet> sommets; //Indice d'un sommet dans la liste correspond à l'indice dans la matrice
+        private int order;
+        private bool directed;
+        private Matrix matrice;
+        private Dictionary<string, int> nomSommets; //associe le nom des sommets à leur indice
+        private List<Sommet> sommets; //Indice d'un sommet dans la liste correspond à l'indice dans la matrice
         // --- Construction du graphe ---
 
         // Contruit un graphe (`directed`=true => orienté)

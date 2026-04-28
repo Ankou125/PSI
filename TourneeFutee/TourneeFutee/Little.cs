@@ -5,9 +5,9 @@
     public class Little
     {
         // TODO : ajouter tous les attributs que vous jugerez pertinents 
-        Matrix matrice;
-        Graph graphe;
-        int nbSommets;
+        private Matrix matrice;
+        private Graph graphe;
+        private int nbSommets;
 
         // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Matrix Matrice

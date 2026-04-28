@@ -12,7 +12,7 @@ namespace TourneeFutee
         private string nom;
         private float valeur;
         private int indice;
-        uint id;
+        private uint id;
 
         public Sommet(string nom, float valeur)
         {
