@@ -383,33 +383,26 @@ namespace TourneeFutee
         /// <param name="id">Identifiant de la tournée à charger.</param>
         /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
         #endregion
+        
         public Tour LoadTour(uint id)
         {
-            // TODO : implémenter le chargement de la tournée
-            //
-            // Ordre recommandé :
-            //   1. SELECT dans Tournee WHERE id = @id -> récupérer cout_total et graphe_id
-            //   2. SELECT dans EtapeTournee JOIN Sommet WHERE tournee_id = @id
-            //      ORDER BY numero_ordre -> reconstruire la séquence ordonnée de sommets
-            //   3. Construire et retourner l'instance Tour
-            // throw new NotImplementedException("LoadTour non implémenté.");
-
-            if (connection.State != ConnectionState.Open) //Vérifie que la connexion est bien ouverte
+            if (connection.State != ConnectionState.Open)
                 connection.Open();
+
             try
             {
-                uint graphId;
                 float coutTotal;
-                string requete1 = "SELECT * FROM Tournee WHERE id = @id;"; // Récupère les informations de la tournée (cout_total et graphe_id)
-                using (MySqlCommand command1= new MySqlCommand(requete1, connection))
+
+                string requete1 = "SELECT cout_total FROM Tournee WHERE id = @id;";
+                using (MySqlCommand command1 = new MySqlCommand(requete1, connection))
                 {
                     command1.Parameters.AddWithValue("@id", id);
+
                     using (MySqlDataReader reader1 = command1.ExecuteReader())
                     {
                         if (reader1.Read())
                         {
-                            graphId = (uint)reader1["graphe_id"];
-                            coutTotal = (float)reader1["cout_total"];
+                            coutTotal = Convert.ToSingle(reader1["cout_total"]);
                         }
                         else
                         {
@@ -417,42 +410,36 @@ namespace TourneeFutee
                         }
                     }
                 }
-                List<Sommet> ordre = new List<Sommet>();
-                string requete2 = @"SELECT s.* FROM EtapeTournee et JOIN Sommet s ON et.sommet_id = s.id WHERE et.tournee_id = @id ORDER BY et.numero_ordre;"; // Récupère les étapes de la tournée dans l'ordre
+
+                List<string> vertices = new List<string>();
+
+                string requete2 = @"
+            SELECT s.nom
+            FROM EtapeTournee et
+            JOIN Sommet s ON et.sommet_id = s.id
+            WHERE et.tournee_id = @id
+            ORDER BY et.numero_ordre;";
+
                 using (MySqlCommand command2 = new MySqlCommand(requete2, connection))
                 {
                     command2.Parameters.AddWithValue("@id", id);
+
                     using (MySqlDataReader reader2 = command2.ExecuteReader())
                     {
                         while (reader2.Read())
                         {
-                            Sommet sommet = new Sommet(requete2, coutTotal);
-                            {
-                                string nom = reader2["nom"].ToString();
-                                float valeur = reader2["valeur"] != DBNull.Value ? 0 : Convert.ToSingle(reader2["valeur"]);
-                                Sommet s = new Sommet(nom, valeur);
-                                s.Id = (uint)reader2["id"];
-                                ordre.Add(s);
-                            }
+                            vertices.Add(reader2["nom"].ToString());
                         }
                     }
                 }
-                List<(string source, string destination)> parcours = new List<(string source, string destination)>();
-                for (int i = 0; i < ordre.Count; i++)
-                {
-                    string source = ordre[i].Nom;
-                    string destination = ordre[(i + 1) % ordre.Count].Nom;
-                    parcours.Add((source, destination));
-                }
-                Tour tour = new Tour(parcours, coutTotal);
-                return tour;
+
+                return new Tour(vertices, coutTotal);
             }
             finally
             {
                 CloseConnection();
             }
         }
-
         // ─────────────────────────────────────────────────────────────────────
         // Méthodes utilitaires privées (à compléter selon vos besoins)
         // ─────────────────────────────────────────────────────────────────────
