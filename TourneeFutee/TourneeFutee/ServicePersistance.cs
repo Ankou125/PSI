@@ -7,10 +7,7 @@ using System.Transactions;
 
 namespace TourneeFutee
 {
-    /// <summary>
-    /// Service de persistance permettant de sauvegarder et charger
-    /// des graphes et des tournées dans une base de données MySQL.
-    /// </summary>
+    // Service de persistance permettant de sauvegarder et charger des graphes et des tournées dans une base de données MySQL.
     public class ServicePersistance
     {
         // Attributs privés
@@ -31,13 +28,8 @@ namespace TourneeFutee
             set { this.etapId = value; }
         }
         #region Consignes
-        /// <summary>
-        /// Instancie un service de persistance et se connecte automatiquement
-        /// à la base de données <paramref name="dbname"/> sur le serveur
-        /// à l'adresse IP <paramref name="serverIp"/>.
-        /// Les identifiants sont définis par <paramref name="user"/> (utilisateur)
-        /// et <paramref name="pwd"/> (mot de passe).
-        /// </summary>
+        // Instancie un service de persistance et se connecte automatiquement à la base de données <paramref name="dbname"/> sur le serveur à l'adresse IP <paramref name="serverIp"/>.
+        // Les identifiants sont définis par <paramref name="user"/> (utilisateur) et <paramref name="pwd"/> (mot de passe).
         /// <param name="serverIp">Adresse IP du serveur MySQL.</param>
         /// <param name="dbname">Nom de la base de données.</param>
         /// <param name="user">Nom d'utilisateur.</param>
@@ -71,23 +63,14 @@ namespace TourneeFutee
 
         // Méthodes publiques
         #region Consignes
-        /// <summary>
-        /// Sauvegarde le graphe <paramref name="g"/> en base de données
-        /// (sommets et arcs inclus) et renvoie son identifiant.
-        /// </summary>
-        /// <param name="g">Le graphe à sauvegarder.</param>
-        /// <returns>Identifiant du graphe en base de données (AUTO_INCREMENT).</returns>
+        /// Sauvegarde le graphe <paramref name="g"/> en base de données (sommets et arcs inclus) et renvoie son identifiant.
+        /// <param name="g">Le graphe à sauvegarder.</param> <returns>Identifiant du graphe en base de données (AUTO_INCREMENT).</returns>
         // TODO : implémenter la sauvegarde du graphe
-        //
         // Ordre recommandé :
         //   1. INSERT dans la table Graphe -> récupérer l'id avec LAST_INSERT_ID()
-        //   2. Pour chaque sommet de g : INSERT dans Sommet (valeur + graphe_id)
-        //      -> conserver la correspondance sommet C# <-> id BdD
-        //   3. Pour chaque arc de la matrice d'adjacence (poids != +inf) :
-        //      INSERT dans Arc (sommet_source_id, sommet_dest_id, poids, graphe_id)
-        //
-        // Exemple pour récupérer l'id généré :
-        //   uint id = Convert.ToUInt32(cmd.ExecuteScalar());
+        //   2. Pour chaque sommet de g : INSERT dans Sommet (valeur + graphe_id) -> conserver la correspondance sommet C# <-> id BdD
+        //   3. Pour chaque arc de la matrice d'adjacence (poids != +inf) : INSERT dans Arc (sommet_source_id, sommet_dest_id, poids, graphe_id)
+        // Exemple pour récupérer l'id généré : uint id = Convert.ToUInt32(cmd.ExecuteScalar());
         #endregion
         public uint SaveGraph(Graph g)
         {
