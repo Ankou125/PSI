@@ -13,19 +13,13 @@ namespace TourneeFutee
     /// </summary>
     public class ServicePersistance
     {
-        // ─────────────────────────────────────────────────────────────────────
         // Attributs privés
-        // ─────────────────────────────────────────────────────────────────────
         private readonly string connectionString;
         private Dictionary<int, uint> sommetId;
         private Dictionary<int, uint> etapId;
+        private readonly MySqlConnection connection; // maintenant une connexion ouverte pour toute la durée de vie du service, à fermer explicitement avec CloseConnection() ou via un using
 
-        // TODO : si vous avez besoin de maintenir une connexion ouverte,  ajoutez un attribut MySqlConnection ici.
-        private readonly MySqlConnection connection;
-
-        // ─────────────────────────────────────────────────────────────────────
         // Constructeur
-        // ─────────────────────────────────────────────────────────────────────
         public Dictionary<int, uint> SommetId
         {
             get { return this.sommetId; }
@@ -75,9 +69,7 @@ namespace TourneeFutee
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
         // Méthodes publiques
-        // ─────────────────────────────────────────────────────────────────────
         #region Consignes
         /// <summary>
         /// Sauvegarde le graphe <paramref name="g"/> en base de données
@@ -278,7 +270,6 @@ namespace TourneeFutee
                 CloseConnection();
             }
         }
-
         #region Consignes
             /// <summary>
             /// Sauvegarde la tournée <paramref name="t"/> (effectuée dans le graphe
@@ -368,7 +359,6 @@ namespace TourneeFutee
         /// <param name="id">Identifiant de la tournée à charger.</param>
         /// <returns>Instance de <see cref="Tour"/> reconstituée.</returns>
         #endregion
-        
         public Tour LoadTour(uint id)
         {
             if (connection.State != ConnectionState.Open)
@@ -412,14 +402,8 @@ namespace TourneeFutee
                 CloseConnection();
             }
         }
-        // ─────────────────────────────────────────────────────────────────────
-        // Méthodes utilitaires privées (à compléter selon vos besoins)
-        // ─────────────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Crée et retourne une nouvelle connexion MySQL ouverte.
-        /// Encadrez toujours l'appel dans un bloc using pour garantir la fermeture.
-        /// </summary>
+        
+        /// Crée et retourne une nouvelle connexion MySQL ouverte. Encadrez toujours l'appel dans un bloc using pour garantir la fermeture.
         private MySqlConnection OpenConnection()
         {
             var conn = new MySqlConnection(connectionString);

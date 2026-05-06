@@ -1,15 +1,12 @@
 ﻿namespace TourneeFutee
 {
-    // Résout le problème de voyageur de commerce défini par le graphe `graph`
-    // en utilisant l'algorithme de Little
+    // Résout le problème de voyageur de commerce défini par le graphe `graph` en utilisant l'algorithme de Little
     public class Little
     {
-        // TODO : ajouter tous les attributs que vous jugerez pertinents 
         private Matrix matrice;
         private Graph graphe;
         private int nbSommets;
 
-        // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
         public Matrix Matrice
         {
             get { return matrice; }
@@ -24,7 +21,7 @@
         {
             get { return nbSommets; }
         }
-        // Instancie le planificateur en spécifiant le graphe modélisant un problème de voyageur de commerce
+        
         public Little(Graph graph)
         {
             if (graph == null)
@@ -34,8 +31,7 @@
             this.nbSommets = graph.Sommets.Count;
         }
 
-        // Trouve la tournée optimale dans le graphe `this.graph`
-        // (c'est à dire le cycle hamiltonien de plus faible coût)
+        // Trouve la tournée optimale dans le graphe `this.graph` (c'est à dire le cycle hamiltonien de plus faible coût)
         public Tour ComputeOptimalTour()
         {
             Matrix m = this.matrice.Clone();
@@ -64,7 +60,6 @@
         {
             if (borneCourante >= meilleurCout)
                 return;
-
             if (m.NbRows == 2 && m.NbColumns == 2) // Cas terminal : matrice 2x2 => on termine directement
             {
                 List<(string source, string destination)> tourneeFinale = new List<(string source, string destination)>(segmentsChoisis);
@@ -106,7 +101,7 @@
             string source = villesSources[iRegret];
             string destination = villesDestinations[jRegret];
             var segment = (source, destination);
-
+            
             if (!IsForbiddenSegment(segment, segmentsChoisis, this.nbSommets)) // 1. Branche incluse d'abord
             {
                 Matrix mIncluse = m.Clone();
@@ -176,8 +171,6 @@
             return total;
         }
 
-        // --- Méthodes utilitaires réalisant des étapes de l'algorithme de Little
-
         // Réduit la matrice `m` et revoie la valeur totale de la réduction
         // Après appel à cette méthode, la matrice `m` est *modifiée*.
         public static float ReduceMatrix(Matrix m)
@@ -241,7 +234,6 @@
             float maxRegret = -1.0f; //stock le plus grand regret
             int bestI = 0;
             int bestJ = 0;
-
             for (int i = 0; i < m.NbRows; i++) //parcours la matrice
             {
                 for (int j = 0; j < m.NbColumns; j++)
@@ -250,8 +242,6 @@
                     {
                         float minRow = float.PositiveInfinity; //on met à infini comme ca n'importe quelle valeurs sera plus petite
                         float minCol = float.PositiveInfinity;
-
-                        
                         for (int k = 0; k < m.NbColumns; k++) //on cherche le minimum sur la colonne
                         {
                             if (k != j) //pour ignorer la case nulle
@@ -299,13 +289,10 @@
             return (bestI, bestJ, maxRegret);//on renvoit la ligne, la colonne du regret maximal et sa valeur 
         }
 
-
-        /* Renvoie vrai si le segment `segment` est un trajet parasite, c'est-à-dire s'il ferme prématurément la tournée incluant les trajets contenus dans `includedSegments`
-         * Une tournée est incomplète si elle visite un nombre de villes inférieur à `nbCities`
-         */
+        // Renvoie vrai si le segment `segment` est un trajet parasite, c'est-à-dire s'il ferme prématurément la tournée incluant les trajets contenus dans `includedSegments`
+        // Une tournée est incomplète si elle visite un nombre de villes inférieur à `nbCities`
         public static bool IsForbiddenSegment((string source, string destination) segment, List<(string source, string destination)> includedSegments, int nbCities)
         {
-
             int i = 0;
             string current = segment.destination;
             int length = 1;
