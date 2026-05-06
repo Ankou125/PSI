@@ -80,7 +80,6 @@
                 return false;
             foreach (var s in this.parcours)
             {
-                Console.WriteLine(s.source + " --> " + s.destination);
                 if((s.source==segment.source)&&(s.destination==segment.destination))
                     return true;
             }
